@@ -249,6 +249,9 @@
       if (alienLivesEl) alienLivesEl.textContent = '💚'.repeat(ALIEN_LIVES);
     }
     if (alienWrap) alienWrap.classList.add('visible');
+    /* Ensure Alien label is visible (for all levels) */
+    var alienLabel = document.getElementById('alien-lives-label');
+    if (alienLabel) alienLabel.style.display = '';
   }
 
   /* ─── 6. Spawners ──────────────────────────────────────────────────────── */
@@ -557,6 +560,8 @@
       if (enemyShipsEl) enemyShipsEl.innerHTML = '';
       rocket.style.display = '';
       gameTimeLeft = SECONDS_PER_LEVEL;
+      musicSpedUp = false;
+      if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
       var tb = document.getElementById('timer-bar-wrap');
@@ -582,6 +587,8 @@
       duelAlien2YPercent = 30;
       alienLives = ALIEN_LIVES;
       gameTimeLeft = SECONDS_PER_LEVEL;
+      musicSpedUp = false;
+      if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
       var tb = document.getElementById('timer-bar-wrap');
@@ -600,6 +607,8 @@
       collectiblesEl.innerHTML = '';
       obstaclesEl.innerHTML = '';
       gameTimeLeft = SECONDS_PER_LEVEL;
+      musicSpedUp = false;
+      if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
       var tb = document.getElementById('timer-bar-wrap');

@@ -224,9 +224,11 @@ body {
 
 #timer-bar-wrap {
   margin-top: 6px;
+  margin-bottom: 8px;
   opacity: 0;
   transition: opacity 0.3s;
   width: 100%;
+  flex-shrink: 0;
 }
 #timer-bar-wrap.visible {
   opacity: 1;
@@ -311,6 +313,14 @@ body {
 }
 #top-right-lives .alien-lives-only.visible {
   display: flex;
+}
+/* Always show Alien hearts in top-right when game UI is visible */
+#top-right-lives #alien-lives-wrap {
+  display: flex !important;
+  opacity: 1 !important;
+}
+#top-right-lives #alien-lives-label {
+  display: inline !important;
 }
 #top-right-lives #alien-lives {
   letter-spacing: 2px;
@@ -419,8 +429,9 @@ body {
   left: 0;
   right: 0;
   z-index: 30;
-  padding: 8px 0;
+  padding: 10px 0;
   margin-top: 6px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
