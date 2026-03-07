@@ -581,6 +581,33 @@ body {
   text-shadow: 0 0 20px rgba(255, 217, 61, 0.4);
 }
 
+#start-icons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(12px, 4vw, 20px);
+  margin-bottom: clamp(14px, 3vw, 20px);
+}
+
+.start-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.start-icon-emoji {
+  font-size: clamp(36px, 10vw, 48px);
+  line-height: 1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.start-icon-label {
+  font-size: clamp(0.7rem, 2vw, 0.85rem);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
 #instructions p {
   margin-bottom: clamp(6px, 1.5vw, 10px);
   font-size: var(--font-instruction);
@@ -881,6 +908,37 @@ button:active {
   background-size: 120px 120px;
 }
 
+/* Level 3: Jupiter shelter in center – blocks alien lasers */
+#duel-jupiter {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(56px, 20vw, 100px);
+  z-index: 10;
+  filter: drop-shadow(0 0 20px rgba(210, 180, 140, 0.5));
+  pointer-events: none;
+}
+
+#duel-scene.level-4 #duel-jupiter {
+  display: none;
+}
+
+#duel-shelters {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#duel-shelters .duel-shelter {
+  position: absolute;
+  font-size: clamp(32px, 10vw, 48px);
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 0 12px rgba(210, 180, 140, 0.4));
+  pointer-events: none;
+}
+
 #duel-player {
   position: absolute;
   left: 18%;
@@ -949,6 +1007,17 @@ button:active {
 .duel-laser-alien {
   background: linear-gradient(90deg, #00ff88, #00ccff);
   box-shadow: 0 0 14px rgba(0, 255, 136, 0.8);
+}
+
+.duel-laser-player.ice {
+  background: linear-gradient(90deg, #66ccff, #cceeff);
+  box-shadow: 0 0 14px rgba(100, 200, 255, 0.95);
+}
+
+#duel-alien.frozen,
+#duel-alien2.duel-alien-extra.frozen {
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)) hue-rotate(180deg) saturate(0.7);
+  opacity: 0.9;
 }
 
 /* Responsive: tablet and desktop */

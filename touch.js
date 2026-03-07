@@ -27,7 +27,50 @@
     setupButton('touch-down', 'ArrowDown', 'ArrowDown');
     setupButton('touch-shoot', 'Enter', 'Enter');
     setupButton('touch-life', 'H', null);
-    setupButton('touch-turbo', 'Shift', null);
     setupButton('touch-bubble', 'b', null);
+    (function () {
+      var turboBtn = document.getElementById('touch-turbo');
+      if (!turboBtn || typeof window.GameActivateTurbo !== 'function') return;
+      var turboPressTime = 0;
+      function onTurboEnd(isHold) {
+        if (turboPressTime > 0) {
+          window.GameActivateTurbo(isHold);
+          turboPressTime = 0;
+        }
+      }
+      turboBtn.addEventListener('touchstart', function (e) {
+        e.preventDefault();
+        turboPressTime = Date.now();
+      }, { passive: false });
+      turboBtn.addEventListener('touchend', function (e) {
+        e.preventDefault();
+        var duration = turboPressTime > 0 ? Date.now() - turboPressTime : 0;
+        var threshold = (window.GameConfig && window.GameConfig.TURBO_HOLD_THRESHOLD_MS) || 400;
+        onTurboEnd(duration >= threshold);
+      }, { passive: false });
+      turboBtn.addEventListener('touchcancel', function (e) {
+        e.preventDefault();
+        var duration = turboPressTime > 0 ? Date.now() - turboPressTime : 0;
+        var threshold = (window.GameConfig && window.GameConfig.TURBO_HOLD_THRESHOLD_MS) || 400;
+        onTurboEnd(duration >= threshold);
+      }, { passive: false });
+      turboBtn.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        turboPressTime = Date.now();
+      });
+      turboBtn.addEventListener('mouseup', function (e) {
+        e.preventDefault();
+        var duration = turboPressTime > 0 ? Date.now() - turboPressTime : 0;
+        var threshold = (window.GameConfig && window.GameConfig.TURBO_HOLD_THRESHOLD_MS) || 400;
+        onTurboEnd(duration >= threshold);
+      });
+      turboBtn.addEventListener('mouseleave', function () {
+        if (turboPressTime > 0) {
+          var duration = Date.now() - turboPressTime;
+          var threshold = (window.GameConfig && window.GameConfig.TURBO_HOLD_THRESHOLD_MS) || 400;
+          onTurboEnd(duration >= threshold);
+        }
+      });
+    })();
   }
 })();

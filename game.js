@@ -31,6 +31,8 @@
   const enemyShipsEl = document.getElementById('enemy-ships');
   const skyEl = document.getElementById('sky');
   const duelSceneEl = document.getElementById('duel-scene');
+  const duelJupiterEl = document.getElementById('duel-jupiter');
+  const duelSheltersEl = document.getElementById('duel-shelters');
   const duelPlayerEl = document.getElementById('duel-player');
   const duelAlienEl = document.getElementById('duel-alien');
   const duelAlien2El = document.getElementById('duel-alien2');
@@ -69,6 +71,9 @@
   const COST_EXTRA_LIFE = cfg.COST_EXTRA_LIFE != null ? cfg.COST_EXTRA_LIFE : 25;
   const COST_TURBO_SHOT = cfg.COST_TURBO_SHOT != null ? cfg.COST_TURBO_SHOT : 25;
   const TURBO_SHOT_DURATION_MS = cfg.TURBO_SHOT_DURATION_MS != null ? cfg.TURBO_SHOT_DURATION_MS : 10000;
+  const TURBO_LASERS_DURATION_MS = cfg.TURBO_LASERS_DURATION_MS != null ? cfg.TURBO_LASERS_DURATION_MS : 5000;
+  const FREEZE_DURATION_MS = cfg.FREEZE_DURATION_MS != null ? cfg.FREEZE_DURATION_MS : 5000;
+  const TURBO_HOLD_THRESHOLD_MS = cfg.TURBO_HOLD_THRESHOLD_MS != null ? cfg.TURBO_HOLD_THRESHOLD_MS : 400;
   const BUBBLE_DURATION_MS = cfg.BUBBLE_DURATION_MS != null ? cfg.BUBBLE_DURATION_MS : 10000;
   const LEVEL3_RESTART_POINTS_PENALTY = cfg.LEVEL3_RESTART_POINTS_PENALTY != null ? cfg.LEVEL3_RESTART_POINTS_PENALTY : 50;
 
@@ -99,12 +104,18 @@
   let gameHard = false;
   let duelAlien2YPercent = 30;
   let turboShotUntil = 0;
+  let shiftKeyDownTime = 0;
+  let iceModeUntil = 0;
+  let alienFrozenUntil = 0;
+  let alien2FrozenUntil = 0;
   let lastTickSec = -1;
   let lastTickHalfSec = -1;
   let musicSpedUp = false;
   let bubbleUntil = 0;
   let gameOverAtLevel3 = false;
+  let gameOverAtLevel4 = false;
   let savedScoreForLevel3Retry = 0;
+  let savedScoreForLevel4Retry = 0;
 
   /* ─── 3. Helpers ───────────────────────────────────────────────────────── */
   function getSpeedMultiplierByProgress(progress) {
@@ -127,7 +138,7 @@
   }
 
   function getSecondsPerLevel() {
-    return level === 3 ? SECONDS_PER_LEVEL_3 : SECONDS_PER_LEVEL;
+    return (level === 3 || level === 4) ? SECONDS_PER_LEVEL_3 : SECONDS_PER_LEVEL;
   }
 
   /* ─── 4. Pause / resume / timer ─────────────────────────────────────────── */
@@ -140,7 +151,13 @@
     obstacleTimer = null;
     starTimer = null;
     shipTimer = null;
-    if (level === 3) {
+    if (level === 3 || level === 4) {
+      if (duelAlienShootTimer) clearInterval(duelAlienShootTimer);
+      if (duelAlienMoveTimer) clearInterval(duelAlienMoveTimer);
+      duelAlienShootTimer = null;
+      duelAlienMoveTimer = null;
+    }
+    if (level === 4) {
       if (duelAlienShootTimer) clearInterval(duelAlienShootTimer);
       if (duelAlienMoveTimer) clearInterval(duelAlienMoveTimer);
       duelAlienShootTimer = null;
@@ -166,6 +183,9 @@
     } else if (level === 3) {
       duelAlienShootTimer = setInterval(duelAlienShoot, DUEL_ALIEN_SHOOT_INTERVAL);
       duelAlienMoveTimer = setInterval(duelAlienMove, DUEL_ALIEN_MOVE_INTERVAL);
+    } else if (level === 4) {
+      duelAlienShootTimer = setInterval(duelAlienShoot, DUEL_ALIEN_SHOOT_INTERVAL);
+      duelAlienMoveTimer = setInterval(duelAlienMove, DUEL_ALIEN_MOVE_INTERVAL);
     }
     timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
     lastTime = performance.now();
@@ -187,7 +207,9 @@
       gameTimeLeft = 0;
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = null;
-      if (level === 3) {
+      if (level === 3 || level === 4) {
+        endGame(false);
+      } else if (level === 4) {
         endGame(false);
       } else {
         levelComplete();
@@ -239,6 +261,10 @@
     return Date.now() < turboShotUntil;
   }
 
+  function isIceModeActive() {
+    return Date.now() < iceModeUntil;
+  }
+
   function getContainer() {
     return document.getElementById('game-container');
   }
@@ -259,13 +285,15 @@
     updateRocketPowerBar();
     var turboEl = document.getElementById('turbo-indicator');
     if (turboEl) turboEl.classList.toggle('active', isTurboActive());
+    if (duelAlienEl) duelAlienEl.classList.toggle('frozen', Date.now() < alienFrozenUntil);
+    if (duelAlien2El) duelAlien2El.classList.toggle('frozen', Date.now() < alien2FrozenUntil);
     var bubbleActive = Date.now() < bubbleUntil;
     if (rocket) rocket.classList.toggle('bubble', bubbleActive && (level === 1 || level === 2));
-    if (duelPlayerEl) duelPlayerEl.classList.toggle('bubble', bubbleActive && level === 3);
+    if (duelPlayerEl) duelPlayerEl.classList.toggle('bubble', bubbleActive && (level === 3 || level === 4));
     var alienLivesEl = document.getElementById('alien-lives');
     var alienWrap = document.getElementById('alien-lives-wrap');
     var alienLabel = document.getElementById('alien-lives-label');
-    if (level === 3) {
+    if (level === 3 || level === 4) {
       if (alienLivesEl) alienLivesEl.textContent = '💚'.repeat(Math.max(0, alienLives));
       if (alienWrap) alienWrap.classList.add('visible');
       if (alienLabel) alienLabel.style.display = '';
@@ -517,11 +545,23 @@
     }
     spawnBalloons();
     var name = getPilotDisplayName();
-    if (levelCompleteMsg) levelCompleteMsg.textContent = name + ' you are the winner!';
     var h1 = levelCompleteEl ? levelCompleteEl.querySelector('h1') : null;
-    if (h1) h1.textContent = 'You won! 🎉';
-    if (nextLevelBtn) nextLevelBtn.textContent = 'Play Again';
-    level = 4;
+    if (level === 3) {
+      level = 4;
+      if (levelCompleteMsg) levelCompleteMsg.textContent = name + ', Level 3 complete! Next: Level 4 – tap the screen to place 2 planets as shelter.';
+      if (h1) h1.textContent = 'Level 3 complete! 🎉';
+      if (nextLevelBtn) nextLevelBtn.textContent = 'Next Level';
+    } else if (level === 4) {
+      level = 4;
+      if (levelCompleteMsg) levelCompleteMsg.textContent = name + ', you won! Play Level 4 again until you lose.';
+      if (h1) h1.textContent = 'You won! 🎉';
+      if (nextLevelBtn) nextLevelBtn.textContent = 'Play Again';
+    } else {
+      level = 5;
+      if (levelCompleteMsg) levelCompleteMsg.textContent = name + ' you are the winner!';
+      if (h1) h1.textContent = 'You won! 🎉';
+      if (nextLevelBtn) nextLevelBtn.textContent = 'Play Again';
+    }
     levelCompleteEl.classList.add('visible');
     if (nextLevelBtn) nextLevelBtn.focus();
   }
@@ -535,7 +575,7 @@
     timerInterval = null;
     starTimer = null;
     shipTimer = null;
-    if (level === 3) {
+    if (level === 3 || level === 4) {
       if (duelAlienShootTimer) clearInterval(duelAlienShootTimer);
       if (duelAlienMoveTimer) clearInterval(duelAlienMoveTimer);
       duelAlienShootTimer = null;
@@ -578,9 +618,13 @@
   }
 
   function startNextLevel() {
-    if (level > 3) {
+    if (level > 4) {
       if (nextLevelBtn) nextLevelBtn.textContent = "Next Level";
       startGame();
+      return;
+    }
+    if (level === 4) {
+      startLevel4();
       return;
     }
     levelCompleteEl.classList.remove('visible');
@@ -609,6 +653,7 @@
     } else if (level === 3) {
       if (skyEl) skyEl.classList.remove('visible');
       if (duelSceneEl) duelSceneEl.classList.add('visible');
+      if (duelSceneEl) duelSceneEl.classList.remove('level-4');
       if (gameHard && duelSceneEl) duelSceneEl.classList.add('hard-mode');
       else if (duelSceneEl) duelSceneEl.classList.remove('hard-mode');
       rocket.style.display = 'none';
@@ -619,6 +664,9 @@
       duelAlien2YPercent = 30;
       alienLives = ALIEN_LIVES;
       alien2Lives = gameHard ? ALIEN_LIVES : 0;
+      iceModeUntil = 0;
+      alienFrozenUntil = 0;
+      alien2FrozenUntil = 0;
       gameTimeLeft = SECONDS_PER_LEVEL_3;
       musicSpedUp = false;
       if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
@@ -661,11 +709,15 @@
     lives = TOTAL_LIVES;
     invincibleUntil = 0;
     turboShotUntil = 0;
+    iceModeUntil = 0;
+    alienFrozenUntil = 0;
+    alien2FrozenUntil = 0;
     bubbleUntil = 0;
     keys.ArrowUp = false;
     keys.ArrowDown = false;
     if (skyEl) skyEl.classList.remove('visible');
     if (duelSceneEl) duelSceneEl.classList.add('visible');
+    if (duelSceneEl) duelSceneEl.classList.remove('level-4');
     if (gameHard && duelSceneEl) duelSceneEl.classList.add('hard-mode');
     else if (duelSceneEl) duelSceneEl.classList.remove('hard-mode');
     rocket.style.display = 'none';
@@ -693,33 +745,151 @@
     requestAnimationFrame(gameTick);
   }
 
+  var MAX_SHELTERS = 2;
+  var lastShelterPlaceTime = 0;
+
+  function placeShelterIfLevel4(e) {
+    if (level !== 4 || !gameRunning || gamePaused || !duelSheltersEl) return;
+    if (duelSheltersEl.children.length >= MAX_SHELTERS) return;
+    if (Date.now() - lastShelterPlaceTime < 400) return;
+    var target = e.target;
+    if (target.closest('button') || target.closest('#duel-player') || target.closest('#duel-alien') || target.closest('#duel-alien2') || target.closest('#duel-player-lasers') || target.closest('#duel-alien-lasers')) return;
+    var container = getContainer();
+    if (!container) return;
+    var rect = container.getBoundingClientRect();
+    var x = (e.touches && e.touches.length) ? e.touches[0].clientX : e.clientX;
+    var y = (e.touches && e.touches.length) ? e.touches[0].clientY : e.clientY;
+    var left = x - rect.left;
+    var top = y - rect.top;
+    if (left < 0 || top < 0 || left > rect.width || top > rect.height) return;
+    var shelter = document.createElement('div');
+    shelter.className = 'duel-shelter';
+    shelter.setAttribute('aria-hidden', 'true');
+    shelter.textContent = '🪐';
+    shelter.style.left = left + 'px';
+    shelter.style.top = top + 'px';
+    duelSheltersEl.appendChild(shelter);
+    lastShelterPlaceTime = Date.now();
+    if (e.preventDefault) e.preventDefault();
+  }
+
+  function startLevel4() {
+    levelCompleteEl.classList.remove('visible');
+    var balloonsEl = document.getElementById('balloons');
+    if (balloonsEl) balloonsEl.innerHTML = '';
+    if (skyEl) skyEl.classList.remove('visible');
+    if (duelSceneEl) duelSceneEl.classList.add('visible');
+    if (duelSceneEl) duelSceneEl.classList.add('level-4');
+    if (gameHard && duelSceneEl) duelSceneEl.classList.add('hard-mode');
+    else if (duelSceneEl) duelSceneEl.classList.remove('hard-mode');
+    rocket.style.display = 'none';
+    if (duelPlayerLasersEl) duelPlayerLasersEl.innerHTML = '';
+    if (duelAlienLasersEl) duelAlienLasersEl.innerHTML = '';
+    if (duelSheltersEl) duelSheltersEl.innerHTML = '';
+    duelPlayerYPercent = 50;
+    duelAlienYPercent = 50;
+    duelAlien2YPercent = 30;
+    alienLives = ALIEN_LIVES;
+    alien2Lives = gameHard ? ALIEN_LIVES : 0;
+    iceModeUntil = 0;
+    alienFrozenUntil = 0;
+    alien2FrozenUntil = 0;
+    gameTimeLeft = SECONDS_PER_LEVEL_3;
+    musicSpedUp = false;
+    if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
+    if (gameTimerEl) gameTimerEl.textContent = SECONDS_PER_LEVEL_3 >= 60 ? '1:' + (SECONDS_PER_LEVEL_3 % 60 < 10 ? '0' : '') + (SECONDS_PER_LEVEL_3 % 60) : '0:' + (SECONDS_PER_LEVEL_3 < 10 ? '0' : '') + SECONDS_PER_LEVEL_3;
+    if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
+    if (window.GameSounds) window.GameSounds.startMusic();
+    updateUI();
+    gameRunning = true;
+    gamePaused = false;
+    duelAlienShootTimer = setInterval(duelAlienShoot, DUEL_ALIEN_SHOOT_INTERVAL);
+    duelAlienMoveTimer = setInterval(duelAlienMove, DUEL_ALIEN_MOVE_INTERVAL);
+    lastTime = performance.now();
+    requestAnimationFrame(gameTick);
+  }
+
+  function startLevel4Retry() {
+    gameOverAtLevel4 = false;
+    gameOverEl.classList.remove('visible');
+    level = 4;
+    score = savedScoreForLevel4Retry;
+    lives = TOTAL_LIVES;
+    invincibleUntil = 0;
+    turboShotUntil = 0;
+    iceModeUntil = 0;
+    alienFrozenUntil = 0;
+    alien2FrozenUntil = 0;
+    bubbleUntil = 0;
+    keys.ArrowUp = false;
+    keys.ArrowDown = false;
+    if (skyEl) skyEl.classList.remove('visible');
+    if (duelSceneEl) duelSceneEl.classList.add('visible');
+    if (duelSceneEl) duelSceneEl.classList.add('level-4');
+    if (gameHard && duelSceneEl) duelSceneEl.classList.add('hard-mode');
+    else if (duelSceneEl) duelSceneEl.classList.remove('hard-mode');
+    rocket.style.display = 'none';
+    if (duelPlayerLasersEl) duelPlayerLasersEl.innerHTML = '';
+    if (duelAlienLasersEl) duelAlienLasersEl.innerHTML = '';
+    if (duelSheltersEl) duelSheltersEl.innerHTML = '';
+    duelPlayerYPercent = 50;
+    duelAlienYPercent = 50;
+    duelAlien2YPercent = 30;
+    alienLives = ALIEN_LIVES;
+    alien2Lives = gameHard ? ALIEN_LIVES : 0;
+    gameTimeLeft = SECONDS_PER_LEVEL_3;
+    musicSpedUp = false;
+    if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
+    if (gameTimerEl) gameTimerEl.textContent = SECONDS_PER_LEVEL_3 >= 60 ? '1:' + (SECONDS_PER_LEVEL_3 % 60 < 10 ? '0' : '') + (SECONDS_PER_LEVEL_3 % 60) : '0:' + (SECONDS_PER_LEVEL_3 < 10 ? '0' : '') + SECONDS_PER_LEVEL_3;
+    if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
+    if (window.GameSounds) window.GameSounds.startMusic();
+    updateUI();
+    gameRunning = true;
+    gamePaused = false;
+    duelAlienShootTimer = setInterval(duelAlienShoot, DUEL_ALIEN_SHOOT_INTERVAL);
+    duelAlienMoveTimer = setInterval(duelAlienMove, DUEL_ALIEN_MOVE_INTERVAL);
+    lastTime = performance.now();
+    requestAnimationFrame(gameTick);
+  }
+
   function duelAlienMove() {
-    if (!gameRunning || gamePaused || level !== 3) return;
-    var choices = [25, 50, 75];
-    duelAlienYPercent = choices[Math.floor(Math.random() * choices.length)];
-    if (duelAlienEl) {
-      duelAlienEl.style.top = duelAlienYPercent + '%';
-      duelAlienEl.style.transform = 'translate(50%, -50%)';
+    if (!gameRunning || gamePaused || (level !== 3 && level !== 4)) return;
+    var now = Date.now();
+    if (now >= alienFrozenUntil) {
+      var choices = [25, 50, 75];
+      duelAlienYPercent = choices[Math.floor(Math.random() * choices.length)];
+      if (duelAlienEl) {
+        duelAlienEl.style.top = duelAlienYPercent + '%';
+        duelAlienEl.style.transform = 'translate(50%, -50%)';
+      }
     }
-    if (gameHard && duelAlien2El) {
-      duelAlien2YPercent = choices[Math.floor(Math.random() * choices.length)];
+    if (gameHard && duelAlien2El && now >= alien2FrozenUntil) {
+      var choices2 = [25, 50, 75];
+      duelAlien2YPercent = choices2[Math.floor(Math.random() * choices2.length)];
       duelAlien2El.style.top = duelAlien2YPercent + '%';
       duelAlien2El.style.transform = 'translate(50%, -50%)';
     }
   }
 
   function duelAlienShoot() {
-    if (!gameRunning || gamePaused || level !== 3 || !duelAlienLasersEl || !getContainer()) return;
+    if (!gameRunning || gamePaused || (level !== 3 && level !== 4) || !duelAlienLasersEl || !getContainer()) return;
+    var now = Date.now();
     var container = getContainer();
     var cr = container.getBoundingClientRect();
-    var alienEl = duelAlienEl.getBoundingClientRect();
-    var laser = document.createElement('div');
-    laser.className = 'duel-laser-alien';
-    laser.style.left = (alienEl.left - cr.left - 30) + 'px';
-    laser.style.top = (alienEl.top - cr.top + alienEl.height / 2 - 3) + 'px';
-    laser.dataset.dx = -DUEL_LASER_SPEED;
-    duelAlienLasersEl.appendChild(laser);
-    if (gameHard && duelAlien2El) {
+    if (now >= alienFrozenUntil) {
+      var alienEl = duelAlienEl.getBoundingClientRect();
+      var laser = document.createElement('div');
+      laser.className = 'duel-laser-alien';
+      laser.style.left = (alienEl.left - cr.left - 30) + 'px';
+      laser.style.top = (alienEl.top - cr.top + alienEl.height / 2 - 3) + 'px';
+      laser.dataset.dx = -DUEL_LASER_SPEED;
+      duelAlienLasersEl.appendChild(laser);
+    }
+    if (gameHard && duelAlien2El && now >= alien2FrozenUntil) {
       var alien2El = duelAlien2El.getBoundingClientRect();
       var laser2 = document.createElement('div');
       laser2.className = 'duel-laser-alien';
@@ -731,21 +901,23 @@
   }
 
   function duelPlayerShoot() {
-    if (level !== 3 || !duelPlayerLasersEl || !duelPlayerEl) return;
+    if ((level !== 3 && level !== 4) || !duelPlayerLasersEl || !duelPlayerEl) return;
     var container = getContainer();
     var cr = container.getBoundingClientRect();
     var playerEl = duelPlayerEl.getBoundingClientRect();
     var baseLeft = playerEl.right - cr.left + 10;
     var baseTop = playerEl.top - cr.top + playerEl.height / 2 - 3;
     var turbo = isTurboActive();
-    var angles = turbo ? [0, -22.5, 22.5] : [0];
+    var ice = isIceModeActive();
+    var angles = (turbo || ice) ? [0, -22.5, 22.5] : [0];
     for (var i = 0; i < angles.length; i++) {
       var angleDeg = angles[i];
       var rad = (angleDeg * Math.PI) / 180;
       var dx = DUEL_LASER_SPEED * Math.cos(rad);
       var dy = angleDeg === 0 ? 0 : DUEL_LASER_SPEED * Math.sin(rad) * 0.4;
       var laser = document.createElement('div');
-      laser.className = 'duel-laser-player';
+      laser.className = ice ? 'duel-laser-player ice' : 'duel-laser-player';
+      if (ice) laser.dataset.ice = '1';
       laser.style.left = baseLeft + 'px';
       laser.style.top = baseTop + 'px';
       laser.dataset.dx = String(dx);
@@ -811,26 +983,37 @@
       var lrect = { left: lr.left - containerRect.left, right: lr.right - containerRect.left, top: lr.top - containerRect.top, bottom: lr.bottom - containerRect.top };
       if (rectsOverlap(lrect, ar)) {
         node.remove();
-        score += ALIEN_HIT_POINTS;
-        alienLives--;
-        updateUI();
-        if (window.GameSounds) window.GameSounds.playCrash();
-        if (alienLives <= 0 && (!gameHard || alien2Lives <= 0)) {
-          levelCompleteDuelWin();
-          return;
+        if (node.dataset.ice === '1') {
+          alienFrozenUntil = Date.now() + FREEZE_DURATION_MS;
+          updateUI();
+        } else {
+          score += ALIEN_HIT_POINTS;
+          alienLives--;
+          updateUI();
+          if (window.GameSounds) window.GameSounds.playCrash();
+          if (alienLives <= 0 && (!gameHard || alien2Lives <= 0)) {
+            levelCompleteDuelWin();
+            return;
+          }
         }
         continue;
       }
       if (ar2 && rectsOverlap(lrect, ar2)) {
         node.remove();
-        score += ALIEN_HIT_POINTS;
-        alien2Lives--;
-        updateUI();
-        if (window.GameSounds) window.GameSounds.playCrash();
-        if (alienLives <= 0 && alien2Lives <= 0) {
-          levelCompleteDuelWin();
-          return;
+        if (node.dataset.ice === '1') {
+          alien2FrozenUntil = Date.now() + FREEZE_DURATION_MS;
+          updateUI();
+        } else {
+          score += ALIEN_HIT_POINTS;
+          alien2Lives--;
+          updateUI();
+          if (window.GameSounds) window.GameSounds.playCrash();
+          if (alienLives <= 0 && alien2Lives <= 0) {
+            levelCompleteDuelWin();
+            return;
+          }
         }
+        continue;
       }
     }
 
@@ -840,6 +1023,28 @@
       var node = duelAlienLasersEl.children[i];
       var lr = node.getBoundingClientRect();
       var lrect = { left: lr.left - containerRect.left, right: lr.right - containerRect.left, top: lr.top - containerRect.top, bottom: lr.bottom - containerRect.top };
+      var blockedByShelter = false;
+      if (level === 3 && duelJupiterEl) {
+        var jr = duelJupiterEl.getBoundingClientRect();
+        var jrect = { left: jr.left - containerRect.left, right: jr.right - containerRect.left, top: jr.top - containerRect.top, bottom: jr.bottom - containerRect.top };
+        if (rectsOverlap(lrect, jrect)) {
+          node.remove();
+          blockedByShelter = true;
+        }
+      }
+      if (!blockedByShelter && level === 4 && duelSheltersEl) {
+        for (var s = 0; s < duelSheltersEl.children.length; s++) {
+          var shelter = duelSheltersEl.children[s];
+          var sr = shelter.getBoundingClientRect();
+          var srect = { left: sr.left - containerRect.left, right: sr.right - containerRect.left, top: sr.top - containerRect.top, bottom: sr.bottom - containerRect.top };
+          if (rectsOverlap(lrect, srect)) {
+            node.remove();
+            blockedByShelter = true;
+            break;
+          }
+        }
+      }
+      if (blockedByShelter) continue;
       if (rectsOverlap(lrect, pr)) {
         node.remove();
         lives--;
@@ -862,7 +1067,7 @@
     var dt = Math.min(timestamp - lastTime, 50);
     lastTime = timestamp;
 
-    if (level === 3) {
+    if (level === 3 || level === 4) {
       if (keys.ArrowUp) duelPlayerYPercent = Math.max(20, duelPlayerYPercent - 2);
       if (keys.ArrowDown) duelPlayerYPercent = Math.min(80, duelPlayerYPercent + 2);
       if (duelPlayerEl) {
@@ -917,16 +1122,21 @@
     if (window.GameSounds) window.GameSounds.stopMusic();
     keys.ArrowUp = false;
     keys.ArrowDown = false;
-    if (level === 3) {
-      gameOverAtLevel3 = true;
-      savedScoreForLevel3Retry = Math.max(0, score - LEVEL3_RESTART_POINTS_PENALTY);
+    if (level === 3 || level === 4) {
+      gameOverAtLevel3 = (level === 3);
+      gameOverAtLevel4 = (level === 4);
+      savedScoreForLevel3Retry = (level === 3) ? Math.max(0, score - LEVEL3_RESTART_POINTS_PENALTY) : savedScoreForLevel3Retry;
+      savedScoreForLevel4Retry = (level === 4) ? Math.max(0, score - LEVEL3_RESTART_POINTS_PENALTY) : savedScoreForLevel4Retry;
     } else {
       gameOverAtLevel3 = false;
+      gameOverAtLevel4 = false;
     }
     gameOverEl.classList.add('visible');
     finalScoreEl.textContent = level === 3
       ? ('Level 3 – Try again? ' + LEVEL3_RESTART_POINTS_PENALTY + ' pts deducted. New score: ' + savedScoreForLevel3Retry)
-      : ('You reached Level ' + level + ' with ' + score + ' points!');
+      : (level === 4
+        ? ('Level 4 – Game over! Try again from Level 3. ' + LEVEL3_RESTART_POINTS_PENALTY + ' pts deducted. New score: ' + savedScoreForLevel4Retry)
+        : ('You reached Level ' + level + ' with ' + score + ' points!'));
     if (document.getElementById('pause-btn-wrap')) document.getElementById('pause-btn-wrap').classList.remove('visible');
     if (exitBtnWrap) exitBtnWrap.classList.remove('visible');
     if (timerWrap) timerWrap.classList.remove('visible', 'warning');
@@ -996,6 +1206,10 @@
     rocketLane = 1;
     invincibleUntil = 0;
     turboShotUntil = 0;
+    shiftKeyDownTime = 0;
+    iceModeUntil = 0;
+    alienFrozenUntil = 0;
+    alien2FrozenUntil = 0;
     bubbleUntil = 0;
     keys.ArrowUp = false;
     keys.ArrowDown = false;
@@ -1064,7 +1278,7 @@
       }
       if (!gameRunning || gamePaused) return;
       if (level === 2) firePlayerLaser();
-      if (level === 3) duelPlayerShoot();
+      if (level === 3 || level === 4) duelPlayerShoot();
     }
     if (e.key === 'h' || e.key === 'H') {
       e.preventDefault();
@@ -1077,11 +1291,8 @@
     }
     if (e.key === 'Shift') {
       e.preventDefault();
-      if (gameRunning && !gamePaused && score >= COST_TURBO_SHOT && !isTurboActive()) {
-        score -= COST_TURBO_SHOT;
-        turboShotUntil = Date.now() + TURBO_SHOT_DURATION_MS;
-        updateUI();
-        if (window.GameSounds) window.GameSounds.playCoin();
+      if (gameRunning && !gamePaused && score >= COST_TURBO_SHOT && !isTurboActive() && !isIceModeActive()) {
+        shiftKeyDownTime = Date.now();
       }
     }
     if (e.key === 'b' || e.key === 'B') {
@@ -1097,12 +1308,38 @@
   function onKeyUp(e) {
     if (e.key === 'ArrowUp') keys.ArrowUp = false;
     if (e.key === 'ArrowDown') keys.ArrowDown = false;
+    if (e.key === 'Shift' && shiftKeyDownTime > 0) {
+      var duration = Date.now() - shiftKeyDownTime;
+      activateTurbo(duration >= TURBO_HOLD_THRESHOLD_MS);
+      shiftKeyDownTime = 0;
+    }
   }
+
+  function activateTurbo(isHold) {
+    if (!gameRunning || gamePaused || score < COST_TURBO_SHOT || isTurboActive() || isIceModeActive()) return;
+    score -= COST_TURBO_SHOT;
+    if ((level === 3 || level === 4) && isHold) {
+      iceModeUntil = Date.now() + FREEZE_DURATION_MS;
+    } else {
+      turboShotUntil = Date.now() + TURBO_LASERS_DURATION_MS;
+    }
+    updateUI();
+    if (window.GameSounds) window.GameSounds.playCoin();
+  }
+
+  window.GameActivateTurbo = function (isHold) {
+    activateTurbo(!!isHold);
+  };
 
   /* ─── 13. Event binding ────────────────────────────────────────────────── */
   startBtn.addEventListener('click', startGame);
   restartBtn.addEventListener('click', function () {
     if (gameOverAtLevel3) startLevel3Retry();
+    else if (gameOverAtLevel4) {
+      gameOverAtLevel4 = false;
+      savedScoreForLevel3Retry = savedScoreForLevel4Retry;
+      startLevel3Retry();
+    }
     else startGame();
   });
   nextLevelBtn.addEventListener('click', startNextLevel);
@@ -1132,6 +1369,19 @@
   if (exitConfirmYes) exitConfirmYes.addEventListener('click', doExitGame);
   if (exitConfirmNo) exitConfirmNo.addEventListener('click', closeExitModal);
 
+  if (duelSceneEl) {
+    duelSceneEl.addEventListener('click', placeShelterIfLevel4);
+    duelSceneEl.addEventListener('touchstart', placeShelterIfLevel4, { passive: false });
+  }
+
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup', onKeyUp);
+
+  (function () {
+    function unlockSound() {
+      if (window.GameSounds && typeof window.GameSounds.init === 'function') window.GameSounds.init();
+    }
+    document.addEventListener('touchstart', unlockSound, { once: true, passive: true });
+    document.addEventListener('click', unlockSound, { once: true });
+  })();
 })();

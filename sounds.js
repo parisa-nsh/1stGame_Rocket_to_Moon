@@ -20,12 +20,14 @@ window.GameSounds = (function () {
     return ctx;
   }
 
-  /* ─── SFX ───────────────────────────────────────────────────────────────── */
   function init() {
-    var c = getCtx();
-    if (c.state === 'suspended') c.resume();
+    try {
+      var c = getCtx();
+      if (c.state === 'suspended') c.resume();
+    } catch (e) {}
   }
 
+  /* ─── SFX ───────────────────────────────────────────────────────────────── */
   function playCoin() {
     try {
       var c = getCtx();

@@ -14,6 +14,9 @@ window.GameConfig = {
   COST_EXTRA_LIFE: 25,
   COST_TURBO_SHOT: 25,
   TURBO_SHOT_DURATION_MS: 10000,
+  TURBO_LASERS_DURATION_MS: 5000,
+  FREEZE_DURATION_MS: 5000,
+  TURBO_HOLD_THRESHOLD_MS: 400,
   TURBO_SHOT_ANGLE_DEG: 45,
 
   /* ─── Level 1 (fly & collect) ─────────────────────────────────────────── */

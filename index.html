@@ -26,9 +26,11 @@
       <div id="enemy-ships" aria-hidden="true"></div>
     </div>
 
-    <!-- Level 3: moon duel -->
+    <!-- Level 3 & 4: moon duel -->
     <div id="duel-scene" aria-hidden="true">
       <div id="duel-moon-bg"></div>
+      <div id="duel-jupiter" aria-hidden="true" role="img" aria-label="Jupiter shelter">🪐</div>
+      <div id="duel-shelters" aria-hidden="true"></div>
       <div id="duel-player" role="img" aria-label="Player">🧑‍🚀</div>
       <div id="duel-alien" role="img" aria-label="Alien">👽</div>
       <div id="duel-alien2" role="img" aria-label="Alien 2" class="duel-alien-extra">👽</div>
@@ -83,10 +85,12 @@
     <!-- Start screen: instructions, difficulty, mode, pilot name, start -->
     <div id="instructions">
         <h2>Rocket to the Moon!</h2>
-        <p>The rocket flies to the moon by itself.</p>
-        <p>⬆️ ⬇️ <strong>Arrow keys</strong> = move up &amp; down to avoid obstacles.</p>
-        <p>⭐ Catch <strong>stars</strong> = +10 points. 🛸 Crash into <strong>obstacles</strong> = -10 points &amp; lose 1 heart.</p>
-        <p><strong>30 seconds per level.</strong> Collect as many points as you can! Spend them: <strong>H</strong> = +1 life (25 pts), <strong>Shift</strong> = Turbo shot for 10 sec – multiple lasers in a 45° spread (25 pts). <strong>B</strong> = Bubble shield – bullet-proof for 10 sec. Level 1: collect stars. Level 2: shoot ships (Enter). Level 3: moon duel (90 sec) – kill both aliens in hard mode to win! If you lose on Level 3, try again from that level with points deducted.</p>
+        <div id="start-icons" aria-hidden="true">
+          <span class="start-icon" title="Pilot"><span class="start-icon-emoji">🧑‍🚀</span><span class="start-icon-label">Pilot</span></span>
+          <span class="start-icon" title="Alien"><span class="start-icon-emoji">👽</span><span class="start-icon-label">Alien</span></span>
+          <span class="start-icon" title="Stars"><span class="start-icon-emoji">⭐</span><span class="start-icon-label">Stars</span></span>
+          <span class="start-icon" title="Ships"><span class="start-icon-emoji">🛸</span><span class="start-icon-label">Ships</span></span>
+        </div>
         <p id="difficulty-label">Difficulty:</p>
         <div id="difficulty-buttons">
           <button id="diff-easy" type="button" class="mode-btn chosen">😊 Easy</button>
