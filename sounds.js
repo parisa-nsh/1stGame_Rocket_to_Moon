@@ -91,6 +91,8 @@ window.GameSounds = (function () {
   }
 
   function playHurray() {
+    try {
+      var c = getCtx();
       var notes = [
         { f: 523.25, d: 0.18 },
         { f: 659.25, d: 0.18 },

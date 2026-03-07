@@ -70,11 +70,6 @@
         <button type="button" id="touch-shoot" class="touch-btn">🔫</button>
         <button type="button" id="touch-down" class="touch-btn">⬇️</button>
       </div>
-      <!-- Timer bar: under touch controls, shows time left -->
-      <div id="timer-bar-wrap" aria-hidden="true">
-        <span id="timer-bar-label">Time</span>
-        <div id="timer-bar"><div id="timer-bar-fill"></div></div>
-      </div>
       <div id="level-row">
         <span id="level-label">Level 1</span>
         <span id="turbo-indicator" class="turbo-badge" aria-hidden="true">Turbo</span>
@@ -124,6 +119,18 @@
       <h1>Level complete! 🎉</h1>
       <p id="level-complete-msg">Next level starting...</p>
       <button id="next-level-btn">Next Level</button>
+    </div>
+
+    <!-- Exit confirmation (replaces native confirm) -->
+    <div id="exit-confirm-modal" class="modal-overlay" aria-hidden="true" aria-modal="true" role="dialog" aria-labelledby="exit-confirm-title">
+      <div class="modal-content">
+        <h2 id="exit-confirm-title">Exit game?</h2>
+        <p>Return to the menu? Your progress will be lost.</p>
+        <div class="modal-actions">
+          <button id="exit-confirm-no" type="button">Stay</button>
+          <button id="exit-confirm-yes" type="button">Exit</button>
+        </div>
+      </div>
     </div>
   </div>
 

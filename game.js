@@ -139,6 +139,7 @@
     timerInterval = null;
     if (window.GameSounds) window.GameSounds.stopMusic();
     if (pauseOverlay) pauseOverlay.classList.add('visible');
+    if (resumeBtn) resumeBtn.focus();
     if (pauseBtn) pauseBtn.textContent = 'Resume';
   }
 
@@ -183,6 +184,10 @@
     var s = sec % 60;
     if (gameTimerEl) gameTimerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
     if (timerWrap && gameTimeLeft <= TIMER_WARNING_AT_SECONDS) timerWrap.classList.add('warning');
+    if (gameTimerEl) {
+      gameTimerEl.setAttribute('aria-live', gameTimeLeft <= TIMER_WARNING_AT_SECONDS ? 'polite' : 'off');
+      if (gameTimeLeft <= TIMER_WARNING_AT_SECONDS) gameTimerEl.setAttribute('aria-atomic', 'true');
+    }
     if (gameTimeLeft <= TIMER_WARNING_AT_SECONDS) {
       if (!musicSpedUp && window.GameSounds && window.GameSounds.setMusicTempo && window.GameSounds.startMusic) {
         musicSpedUp = true;
@@ -212,10 +217,6 @@
   function updateRocketPowerBar() {
     var pct = Math.min(100, (gameTimeLeft / SECONDS_PER_LEVEL) * 100);
     if (levelProgressFill) levelProgressFill.style.width = pct + '%';
-    var timerBarFill = document.getElementById('timer-bar-fill');
-    var timerBarWrap = document.getElementById('timer-bar-wrap');
-    if (timerBarFill) timerBarFill.style.width = pct + '%';
-    if (timerBarWrap) timerBarWrap.classList.toggle('warning', gameTimeLeft <= TIMER_WARNING_AT_SECONDS);
   }
 
   function isTurboActive() {
@@ -235,7 +236,7 @@
   function updateUI() {
     if (scoreEl) scoreEl.textContent = 'Points: ' + score;
     if (livesEl) livesEl.textContent = '❤️'.repeat(lives);
-    if (levelLabelEl) levelLabelEl.textContent = 'Level ' + level + ' · ' + SECONDS_PER_LEVEL + ' sec';
+    if (levelLabelEl) levelLabelEl.textContent = 'Level ' + level;
     var pct = Math.min(100, (gameTimeLeft / SECONDS_PER_LEVEL) * 100);
     if (levelProgressFill) levelProgressFill.style.width = pct + '%';
     updateRocketPowerBar();
@@ -243,15 +244,16 @@
     if (turboEl) turboEl.classList.toggle('active', isTurboActive());
     var alienLivesEl = document.getElementById('alien-lives');
     var alienWrap = document.getElementById('alien-lives-wrap');
+    var alienLabel = document.getElementById('alien-lives-label');
     if (level === 3) {
       if (alienLivesEl) alienLivesEl.textContent = '💚'.repeat(Math.max(0, alienLives));
+      if (alienWrap) alienWrap.classList.add('visible');
+      if (alienLabel) alienLabel.style.display = '';
     } else {
       if (alienLivesEl) alienLivesEl.textContent = '💚'.repeat(ALIEN_LIVES);
+      if (alienWrap) alienWrap.classList.remove('visible');
+      if (alienLabel) alienLabel.style.display = 'none';
     }
-    if (alienWrap) alienWrap.classList.add('visible');
-    /* Ensure Alien label is visible (for all levels) */
-    var alienLabel = document.getElementById('alien-lives-label');
-    if (alienLabel) alienLabel.style.display = '';
   }
 
   /* ─── 6. Spawners ──────────────────────────────────────────────────────── */
@@ -456,7 +458,7 @@
           score += SHIP_POINTS;
           updateUI();
           if (window.GameSounds) window.GameSounds.playCoin();
-          return;
+          break;
         }
       }
     }
@@ -490,6 +492,7 @@
     if (nextLevelBtn) nextLevelBtn.textContent = 'Play Again';
     level = 4;
     levelCompleteEl.classList.add('visible');
+    if (nextLevelBtn) nextLevelBtn.focus();
   }
 
   function levelComplete() {
@@ -524,6 +527,7 @@
     var h1 = levelCompleteEl ? levelCompleteEl.querySelector('h1') : null;
     if (h1) h1.textContent = 'Level complete! 🎉';
     levelCompleteEl.classList.add('visible');
+    if (nextLevelBtn) nextLevelBtn.focus();
   }
 
   function spawnBalloons() {
@@ -564,8 +568,6 @@
       if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
-      var tb = document.getElementById('timer-bar-wrap');
-      if (tb) tb.classList.add('visible');
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
       if (controlsHint) controlsHint.textContent = '⬆️ ⬇️ Arrows · Enter = Shoot · H = +1 life (25 pts) · Shift = Turbo (25 pts) · Space = Pause';
@@ -591,8 +593,6 @@
       if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
-      var tb = document.getElementById('timer-bar-wrap');
-      if (tb) tb.classList.add('visible');
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
       if (controlsHint) controlsHint.textContent = '⬆️ ⬇️ Run · Enter = Shoot · H = +1 life (25 pts) · Shift = Turbo (25 pts) · Space = Pause';
@@ -611,8 +611,6 @@
       if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
-      var tb = document.getElementById('timer-bar-wrap');
-      if (tb) tb.classList.add('visible');
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
       updateUI();
@@ -751,7 +749,7 @@
           levelCompleteDuelWin();
           return;
         }
-        return;
+        continue;
       }
       if (ar2 && rectsOverlap(lrect, ar2)) {
         node.remove();
@@ -763,7 +761,6 @@
           levelCompleteDuelWin();
           return;
         }
-        return;
       }
     }
 
@@ -851,16 +848,32 @@
     keys.ArrowUp = false;
     keys.ArrowDown = false;
     gameOverEl.classList.add('visible');
-    finalScoreEl.textContent = 'You got ' + score + ' points!';
+    finalScoreEl.textContent = 'You reached Level ' + level + ' with ' + score + ' points!';
     if (document.getElementById('pause-btn-wrap')) document.getElementById('pause-btn-wrap').classList.remove('visible');
     if (exitBtnWrap) exitBtnWrap.classList.remove('visible');
     if (timerWrap) timerWrap.classList.remove('visible', 'warning');
-    var tb = document.getElementById('timer-bar-wrap');
-    if (tb) tb.classList.remove('visible', 'warning');
   }
 
   function exitGame() {
-    if (!confirm('Exit game and return to menu?')) return;
+    var modal = document.getElementById('exit-confirm-modal');
+    if (modal) {
+      modal.classList.add('visible');
+      modal.setAttribute('aria-hidden', 'false');
+      var yesBtn = document.getElementById('exit-confirm-yes');
+      if (yesBtn) yesBtn.focus();
+    }
+  }
+
+  function closeExitModal() {
+    var modal = document.getElementById('exit-confirm-modal');
+    if (modal) {
+      modal.classList.remove('visible');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function doExitGame() {
+    closeExitModal();
     gameRunning = false;
     if (obstacleTimer) clearInterval(obstacleTimer);
     if (starTimer) clearInterval(starTimer);
@@ -881,19 +894,17 @@
     scoreEl.classList.remove('visible');
     if (livesEl) livesEl.classList.remove('visible');
     if (document.getElementById('level-row')) document.getElementById('level-row').classList.remove('visible');
-    if (document.getElementById('game-footer')) document.getElementById('game-footer').classList.remove('visible');
     if (controlsHint) controlsHint.classList.remove('visible');
     if (document.getElementById('pause-btn-wrap')) document.getElementById('pause-btn-wrap').classList.remove('visible');
     if (exitBtnWrap) exitBtnWrap.classList.remove('visible');
     if (timerWrap) timerWrap.classList.remove('visible', 'warning');
-    var tbExit = document.getElementById('timer-bar-wrap');
-    if (tbExit) tbExit.classList.remove('visible', 'warning');
     gameOverEl.classList.remove('visible');
     levelCompleteEl.classList.remove('visible');
     if (pauseOverlay) pauseOverlay.classList.remove('visible');
   }
 
   function startGame() {
+    closeExitModal();
     var rocketName = (rocketNameInput && rocketNameInput.value) ? rocketNameInput.value.trim() : '';
     if (!rocketName) rocketName = 'Rocket';
     if (pilotNameEl) pilotNameEl.textContent = 'Pilot: ' + rocketName;
@@ -929,7 +940,6 @@
     scoreEl.classList.add('visible');
     if (livesEl) livesEl.classList.add('visible');
     if (document.getElementById('level-row')) document.getElementById('level-row').classList.add('visible');
-    if (document.getElementById('game-footer')) document.getElementById('game-footer').classList.add('visible');
     if (controlsHint) {
       controlsHint.textContent = '⬆️ ⬇️ Arrows · H = +1 life (25 pts) · Shift = Turbo shot (25 pts, 10s) · Space = Pause';
       controlsHint.classList.add('visible');
@@ -947,8 +957,6 @@
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
     }
-    var tbStart = document.getElementById('timer-bar-wrap');
-    if (tbStart) tbStart.classList.add('visible');
 
     setRocketPosition();
     updateUI();
@@ -1026,6 +1034,10 @@
       exitGame();
     }
   });
+  var exitConfirmYes = document.getElementById('exit-confirm-yes');
+  var exitConfirmNo = document.getElementById('exit-confirm-no');
+  if (exitConfirmYes) exitConfirmYes.addEventListener('click', doExitGame);
+  if (exitConfirmNo) exitConfirmNo.addEventListener('click', closeExitModal);
 
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup', onKeyUp);
