@@ -7,6 +7,7 @@ window.GameSounds = (function () {
   var ctx = null;
   var musicGain = null;
   var musicInterval = null;
+  var musicTempoMs = 450;
 
   /* ─── Context & init ───────────────────────────────────────────────────── */
   function getCtx() {
@@ -73,10 +74,23 @@ window.GameSounds = (function () {
     } catch (e) {}
   }
 
-  function playHurray() {
+  function playTick() {
     try {
       var c = getCtx();
-      /* Victory fanfare: ascending then triumphant hold (C5 E5 G5 C6 - C6 hold) */
+      var o = c.createOscillator();
+      var g = c.createGain();
+      o.connect(g);
+      g.connect(c.destination);
+      o.frequency.value = 660;
+      o.type = 'sine';
+      g.gain.setValueAtTime(0.2, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.01, c.currentTime + 0.06);
+      o.start(c.currentTime);
+      o.stop(c.currentTime + 0.06);
+    } catch (e) {}
+  }
+
+  function playHurray() {
       var notes = [
         { f: 523.25, d: 0.18 },
         { f: 659.25, d: 0.18 },
@@ -122,6 +136,7 @@ window.GameSounds = (function () {
       var c = getCtx();
       var melody = [262, 294, 330, 349, 392, 440, 494, 523];
       var step = 0;
+      var tempo = musicTempoMs;
       musicInterval = setInterval(function () {
         var o = c.createOscillator();
         var g = c.createGain();
@@ -134,8 +149,12 @@ window.GameSounds = (function () {
         o.start(c.currentTime);
         o.stop(c.currentTime + 0.35);
         step++;
-      }, 450);
+      }, tempo);
     } catch (e) {}
+  }
+
+  function setMusicTempo(intervalMs) {
+    musicTempoMs = intervalMs;
   }
 
   function stopMusic() {
@@ -151,8 +170,10 @@ window.GameSounds = (function () {
     playCoin: playCoin,
     playLaser: playLaser,
     playCrash: playCrash,
+    playTick: playTick,
     playHurray: playHurray,
     startMusic: startMusic,
-    stopMusic: stopMusic
+    stopMusic: stopMusic,
+    setMusicTempo: setMusicTempo
   };
 })();

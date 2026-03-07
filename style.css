@@ -222,6 +222,38 @@ body {
   gap: clamp(4px, 1.5vw, 8px);
 }
 
+#timer-bar-wrap {
+  margin-top: 6px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  width: 100%;
+}
+#timer-bar-wrap.visible {
+  opacity: 1;
+}
+#timer-bar-wrap #timer-bar-label {
+  font-size: clamp(0.7rem, 2vw, 0.8rem);
+  color: rgba(255,255,255,0.9);
+  display: block;
+  margin-bottom: 2px;
+}
+#timer-bar {
+  height: clamp(6px, 1.8vw, 8px);
+  background: rgba(255,255,255,0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+#timer-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--kid-blue), var(--accent));
+  border-radius: 8px;
+  transition: width 0.15s ease;
+}
+#timer-bar-wrap.warning #timer-bar-fill {
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+}
+
 #lives {
   font-size: clamp(1rem, 3vw, 1.2rem);
   letter-spacing: 2px;
@@ -254,6 +286,34 @@ body {
 #exit-btn-wrap.visible {
   opacity: 1;
   pointer-events: auto;
+}
+
+#top-right-lives {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+#top-right-lives #pilot-lives-label,
+#top-right-lives #alien-lives-label {
+  font-size: clamp(0.75rem, 2vw, 0.85rem);
+  color: rgba(255,255,255,0.95);
+  font-weight: 600;
+}
+#top-right-lives #lives {
+  margin: 0;
+}
+#top-right-lives .alien-lives-only {
+  display: flex;
+  align-items: center;
+  opacity: 1;
+}
+#top-right-lives .alien-lives-only.visible {
+  display: flex;
+}
+#top-right-lives #alien-lives {
+  letter-spacing: 2px;
 }
 
 .alien-lives-only {
@@ -352,16 +412,15 @@ body {
   opacity: 1;
 }
 
-/* Touch controls: shown only on touch devices (see touch.js) */
+/* Touch controls: under points bar on touch devices */
 .touch-only {
   display: none;
-  position: absolute;
-  bottom: 0;
+  position: relative;
   left: 0;
   right: 0;
   z-index: 30;
-  padding: 8px;
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  padding: 8px 0;
+  margin-top: 6px;
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
@@ -392,6 +451,7 @@ body {
 }
 
 #game-footer {
+  display: none;
   position: absolute;
   bottom: 0;
   left: 0;
@@ -403,6 +463,9 @@ body {
   opacity: 0;
   transition: opacity 0.3s;
   z-index: 20;
+}
+#game-footer.hidden {
+  display: none !important;
 }
 
 #game-footer.visible {

@@ -95,6 +95,9 @@
   let gameHard = false;
   let duelAlien2YPercent = 30;
   let turboShotUntil = 0;
+  let lastTickSec = -1;
+  let lastTickHalfSec = -1;
+  let musicSpedUp = false;
 
   /* ─── 3. Helpers ───────────────────────────────────────────────────────── */
   function getSpeedMultiplierByProgress(progress) {
@@ -180,14 +183,39 @@
     var s = sec % 60;
     if (gameTimerEl) gameTimerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
     if (timerWrap && gameTimeLeft <= TIMER_WARNING_AT_SECONDS) timerWrap.classList.add('warning');
+    if (gameTimeLeft <= TIMER_WARNING_AT_SECONDS) {
+      if (!musicSpedUp && window.GameSounds && window.GameSounds.setMusicTempo && window.GameSounds.startMusic) {
+        musicSpedUp = true;
+        window.GameSounds.setMusicTempo(220);
+        window.GameSounds.startMusic();
+      }
+      var secFloor = Math.floor(gameTimeLeft);
+      if (secFloor !== lastTickSec && window.GameSounds && window.GameSounds.playTick) {
+        lastTickSec = secFloor;
+        window.GameSounds.playTick();
+      }
+      if (gameTimeLeft <= 5) {
+        var halfSec = Math.floor(gameTimeLeft * 2);
+        if (halfSec !== lastTickHalfSec && window.GameSounds && window.GameSounds.playTick) {
+          lastTickHalfSec = halfSec;
+          window.GameSounds.playTick();
+        }
+      } else {
+        lastTickHalfSec = -1;
+      }
+    } else {
+      lastTickSec = -1;
+      lastTickHalfSec = -1;
+    }
   }
 
   function updateRocketPowerBar() {
     var pct = Math.min(100, (gameTimeLeft / SECONDS_PER_LEVEL) * 100);
-    var fill = document.getElementById('rocket-power-fill');
-    var label = document.getElementById('rocket-power-label');
-    if (fill) fill.style.width = pct + '%';
-    if (label) label.textContent = 'Time: ' + Math.ceil(gameTimeLeft) + 's';
+    if (levelProgressFill) levelProgressFill.style.width = pct + '%';
+    var timerBarFill = document.getElementById('timer-bar-fill');
+    var timerBarWrap = document.getElementById('timer-bar-wrap');
+    if (timerBarFill) timerBarFill.style.width = pct + '%';
+    if (timerBarWrap) timerBarWrap.classList.toggle('warning', gameTimeLeft <= TIMER_WARNING_AT_SECONDS);
   }
 
   function isTurboActive() {
@@ -217,10 +245,10 @@
     var alienWrap = document.getElementById('alien-lives-wrap');
     if (level === 3) {
       if (alienLivesEl) alienLivesEl.textContent = '💚'.repeat(Math.max(0, alienLives));
-      if (alienWrap) alienWrap.classList.add('visible');
     } else {
-      if (alienWrap) alienWrap.classList.remove('visible');
+      if (alienLivesEl) alienLivesEl.textContent = '💚'.repeat(ALIEN_LIVES);
     }
+    if (alienWrap) alienWrap.classList.add('visible');
   }
 
   /* ─── 6. Spawners ──────────────────────────────────────────────────────── */
@@ -531,6 +559,8 @@
       gameTimeLeft = SECONDS_PER_LEVEL;
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
+      var tb = document.getElementById('timer-bar-wrap');
+      if (tb) tb.classList.add('visible');
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
       if (controlsHint) controlsHint.textContent = '⬆️ ⬇️ Arrows · Enter = Shoot · H = +1 life (25 pts) · Shift = Turbo (25 pts) · Space = Pause';
@@ -554,6 +584,8 @@
       gameTimeLeft = SECONDS_PER_LEVEL;
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
+      var tb = document.getElementById('timer-bar-wrap');
+      if (tb) tb.classList.add('visible');
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
       if (controlsHint) controlsHint.textContent = '⬆️ ⬇️ Run · Enter = Shoot · H = +1 life (25 pts) · Shift = Turbo (25 pts) · Space = Pause';
@@ -570,6 +602,8 @@
       gameTimeLeft = SECONDS_PER_LEVEL;
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
+      var tb = document.getElementById('timer-bar-wrap');
+      if (tb) tb.classList.add('visible');
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
       updateUI();
@@ -812,6 +846,8 @@
     if (document.getElementById('pause-btn-wrap')) document.getElementById('pause-btn-wrap').classList.remove('visible');
     if (exitBtnWrap) exitBtnWrap.classList.remove('visible');
     if (timerWrap) timerWrap.classList.remove('visible', 'warning');
+    var tb = document.getElementById('timer-bar-wrap');
+    if (tb) tb.classList.remove('visible', 'warning');
   }
 
   function exitGame() {
@@ -841,6 +877,8 @@
     if (document.getElementById('pause-btn-wrap')) document.getElementById('pause-btn-wrap').classList.remove('visible');
     if (exitBtnWrap) exitBtnWrap.classList.remove('visible');
     if (timerWrap) timerWrap.classList.remove('visible', 'warning');
+    var tbExit = document.getElementById('timer-bar-wrap');
+    if (tbExit) tbExit.classList.remove('visible', 'warning');
     gameOverEl.classList.remove('visible');
     levelCompleteEl.classList.remove('visible');
     if (pauseOverlay) pauseOverlay.classList.remove('visible');
@@ -862,6 +900,7 @@
     keys.ArrowDown = false;
     gameTimeLeft = SECONDS_PER_LEVEL;
     gameHard = diffHardBtn && diffHardBtn.classList.contains('chosen');
+    musicSpedUp = false;
 
     if (skyEl) skyEl.classList.add('visible');
     if (duelSceneEl) duelSceneEl.classList.remove('visible');
@@ -899,6 +938,8 @@
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
     }
+    var tbStart = document.getElementById('timer-bar-wrap');
+    if (tbStart) tbStart.classList.add('visible');
 
     setRocketPosition();
     updateUI();

@@ -49,14 +49,31 @@
         <div id="pause-btn-wrap">
           <button id="pause-btn" type="button">Pause</button>
         </div>
-        <div id="lives">❤️❤️❤️❤️❤️</div>
-        <div id="alien-lives-wrap" class="alien-lives-only" aria-hidden="true">
-          <span id="alien-lives-label">Aliens</span>
-          <span id="alien-lives">💚💚💚💚💚</span>
-        </div>
         <div id="exit-btn-wrap">
           <button id="exit-btn" type="button">Exit Game</button>
         </div>
+        <div id="top-right-lives">
+          <span id="pilot-lives-label">Pilot</span>
+          <div id="lives">❤️❤️❤️❤️❤️</div>
+          <span id="alien-lives-label">Alien</span>
+          <div id="alien-lives-wrap" class="alien-lives-only" aria-hidden="true">
+            <span id="alien-lives">💚💚💚💚💚</span>
+          </div>
+        </div>
+      </div>
+      <!-- Timer bar: under points bar, shows time left -->
+      <div id="timer-bar-wrap" aria-hidden="true">
+        <span id="timer-bar-label">Time</span>
+        <div id="timer-bar"><div id="timer-bar-fill"></div></div>
+      </div>
+      <!-- Touch controls: under points bar, only on touch devices -->
+      <div id="touch-controls" class="touch-only" aria-label="On-screen controls">
+        <button type="button" id="touch-up" class="touch-btn">⬆️</button>
+        <button type="button" id="touch-turbo" class="touch-btn" title="Turbo (25 pts)">⚡</button>
+        <button type="button" id="touch-life" class="touch-btn" title="+1 life (25 pts)">❤️+</button>
+        <button type="button" id="touch-pause" class="touch-btn">⏸</button>
+        <button type="button" id="touch-shoot" class="touch-btn">🔫</button>
+        <button type="button" id="touch-down" class="touch-btn">⬇️</button>
       </div>
       <div id="level-row">
         <span id="level-label">Level 1</span>
@@ -83,9 +100,9 @@
         <button id="start-btn">Let's Go!</button>
     </div>
 
-    <!-- Footer: rocket power bar (level 1) -->
-    <div id="game-footer">
-      <span id="rocket-power-label">Rocket power</span>
+    <!-- Footer: hidden (time bar removed) -->
+    <div id="game-footer" class="hidden" aria-hidden="true">
+      <span id="rocket-power-label"></span>
       <div id="rocket-power-bar"><div id="rocket-power-fill"></div></div>
     </div>
 
@@ -107,16 +124,6 @@
       <h1>Level complete! 🎉</h1>
       <p id="level-complete-msg">Next level starting...</p>
       <button id="next-level-btn">Next Level</button>
-    </div>
-
-    <!-- Touch controls: order = Up, Turbo, Heart, Pause, Shoot, Down -->
-    <div id="touch-controls" class="touch-only" aria-label="On-screen controls">
-      <button type="button" id="touch-up" class="touch-btn">⬆️</button>
-      <button type="button" id="touch-turbo" class="touch-btn" title="Turbo (25 pts)">⚡</button>
-      <button type="button" id="touch-life" class="touch-btn" title="+1 life (25 pts)">❤️+</button>
-      <button type="button" id="touch-pause" class="touch-btn">⏸</button>
-      <button type="button" id="touch-shoot" class="touch-btn">🔫</button>
-      <button type="button" id="touch-down" class="touch-btn">⬇️</button>
     </div>
   </div>
 
