@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Rocket Moon" />
+  <meta name="theme-color" content="#1a0a2e" />
+  <title>Rocket to the Moon – Kids Game</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <!-- Game world: sky (levels 1–2), duel (level 3) -->
+    <div id="sky">
+      <div id="stars"></div>
+      <div id="moon" aria-hidden="true"></div>
+      <div id="rocket" role="img" aria-label="Rocket">🚀</div>
+      <div id="collectibles" aria-hidden="true"></div>
+      <div id="obstacles" aria-hidden="true"></div>
+      <!-- Level 2: player lasers and alien ships -->
+      <div id="player-lasers" aria-hidden="true"></div>
+      <div id="enemy-ships" aria-hidden="true"></div>
+    </div>
+
+    <!-- Level 3: moon duel -->
+    <div id="duel-scene" aria-hidden="true">
+      <div id="duel-moon-bg"></div>
+      <div id="duel-player" role="img" aria-label="Player">🧑‍🚀</div>
+      <div id="duel-alien" role="img" aria-label="Alien">👽</div>
+      <div id="duel-alien2" role="img" aria-label="Alien 2" class="duel-alien-extra">👽</div>
+      <div id="duel-player-lasers"></div>
+      <div id="duel-alien-lasers"></div>
+    </div>
+
+    <!-- In-game UI: score, timer, pause, lives, level bar, hints -->
+    <div id="ui">
+      <div id="top-row">
+        <div id="score-wrap">
+          <span id="pilot-name"></span>
+          <span id="score">Points: 10</span>
+        </div>
+        <div id="timer-wrap" aria-hidden="true">
+          <span id="game-timer">1:00</span>
+        </div>
+        <div id="pause-btn-wrap">
+          <button id="pause-btn" type="button">Pause</button>
+        </div>
+        <div id="lives">❤️❤️❤️❤️❤️</div>
+        <div id="exit-btn-wrap">
+          <button id="exit-btn" type="button">Exit Game</button>
+        </div>
+      </div>
+      <div id="level-row">
+        <span id="level-label">Level 1</span>
+        <span id="turbo-indicator" class="turbo-badge" aria-hidden="true">Turbo</span>
+        <div id="level-progress-bar"><div id="level-progress-fill"></div></div>
+      </div>
+      <div id="controls-hint">⬆️ ⬇️ Arrows = up/down · Space = Pause</div>
+    </div>
+
+    <!-- Start screen: instructions, difficulty, mode, pilot name, start -->
+    <div id="instructions">
+        <h2>Rocket to the Moon!</h2>
+        <p>The rocket flies to the moon by itself.</p>
+        <p>⬆️ ⬇️ <strong>Arrow keys</strong> = move up &amp; down to avoid obstacles.</p>
+        <p>⭐ Catch <strong>stars</strong> = +10 points. 🛸 Crash into <strong>obstacles</strong> = -10 points &amp; lose 1 heart.</p>
+        <p><strong>30 seconds per level.</strong> Collect as many points as you can! Spend them: <strong>H</strong> = +1 life (25 pts), <strong>Shift</strong> = Turbo shot for 10 sec – multiple lasers in a 45° spread (25 pts). Level 1: collect stars. Level 2: shoot ships (Enter). Level 3: moon duel!</p>
+        <p id="difficulty-label">Difficulty:</p>
+        <div id="difficulty-buttons">
+          <button id="diff-easy" type="button" class="mode-btn chosen">😊 Easy</button>
+          <button id="diff-hard" type="button" class="mode-btn">🔥 Hard</button>
+        </div>
+        <label for="rocket-name-input" id="rocket-name-label">Type your rocket name:</label>
+        <input type="text" id="rocket-name-input" placeholder="e.g. Star Runner" maxlength="20" autocomplete="off" />
+        <button id="start-btn">Let's Go!</button>
+    </div>
+
+    <!-- Footer: rocket power bar (level 1) -->
+    <div id="game-footer">
+      <span id="rocket-power-label">Rocket power</span>
+      <div id="rocket-power-bar"><div id="rocket-power-fill"></div></div>
+    </div>
+
+    <!-- Overlays: pause, game over, level complete -->
+    <div id="pause-overlay">
+      <h2>Paused</h2>
+      <p class="pause-hint">Press Space or click Resume to continue</p>
+      <button id="resume-btn" type="button">Resume</button>
+    </div>
+
+    <div id="game-over">
+      <h1>Game Over</h1>
+      <p id="final-score">You reached Level 1!</p>
+      <button id="restart-btn" type="button">Try Again</button>
+    </div>
+
+    <div id="level-complete">
+      <div id="balloons" aria-hidden="true"></div>
+      <h1>Level complete! 🎉</h1>
+      <p id="level-complete-msg">Next level starting...</p>
+      <button id="next-level-btn">Next Level</button>
+    </div>
+
+    <!-- Touch controls: shown on mobile so you can play without a keyboard -->
+    <div id="touch-controls" class="touch-only" aria-label="On-screen controls">
+      <button type="button" id="touch-up" class="touch-btn">⬆️</button>
+      <button type="button" id="touch-down" class="touch-btn">⬇️</button>
+      <button type="button" id="touch-shoot" class="touch-btn">🔫</button>
+      <button type="button" id="touch-life" class="touch-btn" title="+1 life (25 pts)">❤️+</button>
+      <button type="button" id="touch-turbo" class="touch-btn" title="Turbo (25 pts)">⚡</button>
+      <button type="button" id="touch-pause" class="touch-btn">⏸</button>
+    </div>
+  </div>
+
+  <!-- Scripts: config first (game balance), then sounds, then game logic -->
+  <script src="config.js"></script>
+  <script src="sounds.js"></script>
+  <script src="game.js"></script>
+  <script src="touch.js"></script>
+</body>
+</html>
