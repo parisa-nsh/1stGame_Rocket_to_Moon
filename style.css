@@ -139,6 +139,17 @@ body {
   animation: rocket-hit 0.3s ease-out;
 }
 
+#rocket.bubble {
+  box-shadow: 0 0 0 8px rgba(174, 230, 255, 0.5), 0 0 20px rgba(135, 206, 250, 0.4), 0 6px 12px rgba(0,0,0,0.3);
+  border-radius: 50%;
+  animation: bubble-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes bubble-pulse {
+  0%, 100% { box-shadow: 0 0 0 8px rgba(174, 230, 255, 0.5), 0 0 20px rgba(135, 206, 250, 0.4), 0 6px 12px rgba(0,0,0,0.3); }
+  50% { box-shadow: 0 0 0 12px rgba(174, 230, 255, 0.35), 0 0 28px rgba(135, 206, 250, 0.5), 0 6px 12px rgba(0,0,0,0.3); }
+}
+
 @keyframes rocket-hit {
   0%, 100% { opacity: 0.5; }
   50% { opacity: 1; }
@@ -867,6 +878,12 @@ button:active {
   filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
   z-index: 12;
   transition: top 0.1s ease-out;
+}
+
+#duel-player.bubble {
+  box-shadow: 0 0 0 12px rgba(174, 230, 255, 0.5), 0 0 24px rgba(135, 206, 250, 0.45);
+  border-radius: 50%;
+  animation: bubble-pulse 1.2s ease-in-out infinite;
 }
 
 #duel-alien {

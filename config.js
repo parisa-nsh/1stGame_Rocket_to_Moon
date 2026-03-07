@@ -46,10 +46,14 @@ window.GameConfig = {
   COLLISION_MARGIN: 28,
   INVINCIBLE_MS: 1500,
 
-  /* ─── Timed mode: fixed 30 seconds per level ───────────────────────────── */
+  /* ─── Timed mode: 30 sec level 1–2, 60 sec level 3 ─────────────────────── */
   SECONDS_PER_LEVEL: 30,
+  SECONDS_PER_LEVEL_3: 60,
   TIMER_UPDATE_INTERVAL_MS: 100,
   TIMER_WARNING_AT_SECONDS: 10,
+
+  /* ─── Bubble shield (footer button / B key): bullet-proof 10 sec ────────── */
+  BUBBLE_DURATION_MS: 10000,
 
   /* ─── Difficulty: Hard mode ────────────────────────────────────────────── */
   HARD_SPEED_MULTIPLIER: 1.15,

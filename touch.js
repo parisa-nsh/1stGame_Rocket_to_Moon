@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Touch controls for mobile / iOS: simulates keyboard so game.js works unchanged.
  */
 (function () {
@@ -28,6 +28,6 @@
     setupButton('touch-shoot', 'Enter', 'Enter');
     setupButton('touch-life', 'H', null);
     setupButton('touch-turbo', 'Shift', null);
-    setupButton('touch-pause', ' ', null);
+    setupButton('touch-bubble', 'b', null);
   }
 })();

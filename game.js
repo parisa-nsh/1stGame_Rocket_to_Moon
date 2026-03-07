@@ -65,9 +65,11 @@
   const TIMER_WARNING_AT_SECONDS = cfg.TIMER_WARNING_AT_SECONDS != null ? cfg.TIMER_WARNING_AT_SECONDS : 10;
   const HARD_SPEED_MULTIPLIER = cfg.HARD_SPEED_MULTIPLIER != null ? cfg.HARD_SPEED_MULTIPLIER : 1.15;
   const SECONDS_PER_LEVEL = cfg.SECONDS_PER_LEVEL != null ? cfg.SECONDS_PER_LEVEL : 30;
+  const SECONDS_PER_LEVEL_3 = cfg.SECONDS_PER_LEVEL_3 != null ? cfg.SECONDS_PER_LEVEL_3 : 60;
   const COST_EXTRA_LIFE = cfg.COST_EXTRA_LIFE != null ? cfg.COST_EXTRA_LIFE : 25;
   const COST_TURBO_SHOT = cfg.COST_TURBO_SHOT != null ? cfg.COST_TURBO_SHOT : 25;
   const TURBO_SHOT_DURATION_MS = cfg.TURBO_SHOT_DURATION_MS != null ? cfg.TURBO_SHOT_DURATION_MS : 10000;
+  const BUBBLE_DURATION_MS = cfg.BUBBLE_DURATION_MS != null ? cfg.BUBBLE_DURATION_MS : 10000;
 
   const LANE_Y_PERCENTS = cfg.LANE_Y_PERCENTS && cfg.LANE_Y_PERCENTS.length ? cfg.LANE_Y_PERCENTS : [25, 75];
 
@@ -98,6 +100,7 @@
   let lastTickSec = -1;
   let lastTickHalfSec = -1;
   let musicSpedUp = false;
+  let bubbleUntil = 0;
 
   /* ─── 3. Helpers ───────────────────────────────────────────────────────── */
   function getSpeedMultiplierByProgress(progress) {
@@ -117,6 +120,10 @@
 
   function getShipSpawnInterval() {
     return Math.max(cfg.SPAWN_SHIP_MIN_MS != null ? cfg.SPAWN_SHIP_MIN_MS : 1000, cfg.SPAWN_SHIP_MAX_MS != null ? cfg.SPAWN_SHIP_MAX_MS : 1400);
+  }
+
+  function getSecondsPerLevel() {
+    return level === 3 ? SECONDS_PER_LEVEL_3 : SECONDS_PER_LEVEL;
   }
 
   /* ─── 4. Pause / resume / timer ─────────────────────────────────────────── */
@@ -215,7 +222,8 @@
   }
 
   function updateRocketPowerBar() {
-    var pct = Math.min(100, (gameTimeLeft / SECONDS_PER_LEVEL) * 100);
+    var secPerLevel = getSecondsPerLevel();
+    var pct = Math.min(100, (gameTimeLeft / secPerLevel) * 100);
     if (levelProgressFill) levelProgressFill.style.width = pct + '%';
   }
 
@@ -236,12 +244,16 @@
   function updateUI() {
     if (scoreEl) scoreEl.textContent = 'Points: ' + score;
     if (livesEl) livesEl.textContent = '❤️'.repeat(lives);
-    if (levelLabelEl) levelLabelEl.textContent = 'Level ' + level + ' • ' + SECONDS_PER_LEVEL + ' sec';
-    var pct = Math.min(100, (gameTimeLeft / SECONDS_PER_LEVEL) * 100);
+    var secPerLevel = getSecondsPerLevel();
+    if (levelLabelEl) levelLabelEl.textContent = 'Level ' + level + ' • ' + secPerLevel + ' sec';
+    var pct = Math.min(100, (gameTimeLeft / secPerLevel) * 100);
     if (levelProgressFill) levelProgressFill.style.width = pct + '%';
     updateRocketPowerBar();
     var turboEl = document.getElementById('turbo-indicator');
     if (turboEl) turboEl.classList.toggle('active', isTurboActive());
+    var bubbleActive = Date.now() < bubbleUntil;
+    if (rocket) rocket.classList.toggle('bubble', bubbleActive && (level === 1 || level === 2));
+    if (duelPlayerEl) duelPlayerEl.classList.toggle('bubble', bubbleActive && level === 3);
     var alienLivesEl = document.getElementById('alien-lives');
     var alienWrap = document.getElementById('alien-lives-wrap');
     var alienLabel = document.getElementById('alien-lives-label');
@@ -414,7 +426,7 @@
 
   function checkObstacleHits(containerRect, rocketRect) {
     var now = Date.now();
-    if (now < invincibleUntil) return;
+    if (now < invincibleUntil || now < bubbleUntil) return;
 
     for (var i = obstaclesEl.children.length - 1; i >= 0; i--) {
       var node = obstaclesEl.children[i];
@@ -587,10 +599,10 @@
       duelAlienYPercent = 50;
       duelAlien2YPercent = 30;
       alienLives = ALIEN_LIVES;
-      gameTimeLeft = SECONDS_PER_LEVEL;
+      gameTimeLeft = SECONDS_PER_LEVEL_3;
       musicSpedUp = false;
       if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
-      if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
+      if (gameTimerEl) gameTimerEl.textContent = '1:00';
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
@@ -763,7 +775,7 @@
     }
 
     var now = Date.now();
-    if (now < invincibleUntil) return;
+    if (now < invincibleUntil || now < bubbleUntil) return;
     for (var i = duelAlienLasersEl.children.length - 1; i >= 0; i--) {
       var node = duelAlienLasersEl.children[i];
       var lr = node.getBoundingClientRect();
@@ -809,7 +821,7 @@
     if (keys.ArrowDown) rocketLane = 1;
     setRocketPosition();
 
-    var progress = 1 - (gameTimeLeft / SECONDS_PER_LEVEL);
+    var progress = 1 - (gameTimeLeft / getSecondsPerLevel());
     scrollSpeed = SCROLL_SPEED_BASE * getSpeedMultiplierByProgress(progress);
     moveAll(dt);
 
@@ -915,6 +927,7 @@
     rocketLane = 1;
     invincibleUntil = 0;
     turboShotUntil = 0;
+    bubbleUntil = 0;
     keys.ArrowUp = false;
     keys.ArrowDown = false;
     gameTimeLeft = SECONDS_PER_LEVEL;
@@ -998,6 +1011,14 @@
       if (gameRunning && !gamePaused && score >= COST_TURBO_SHOT && !isTurboActive()) {
         score -= COST_TURBO_SHOT;
         turboShotUntil = Date.now() + TURBO_SHOT_DURATION_MS;
+        updateUI();
+        if (window.GameSounds) window.GameSounds.playCoin();
+      }
+    }
+    if (e.key === 'b' || e.key === 'B') {
+      e.preventDefault();
+      if (gameRunning && !gamePaused && Date.now() >= bubbleUntil) {
+        bubbleUntil = Date.now() + BUBBLE_DURATION_MS;
         updateUI();
         if (window.GameSounds) window.GameSounds.playCoin();
       }
