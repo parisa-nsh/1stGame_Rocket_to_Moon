@@ -36,7 +36,7 @@
       <div id="duel-alien-lasers"></div>
     </div>
 
-    <!-- In-game UI: score, timer, pause, lives, level bar, hints -->
+    <!-- In-game UI: template layout = Points/timer/pause/exit → Level bar → Pilot/Alien lives -->
     <div id="ui">
       <div id="top-row">
         <div id="score-wrap">
@@ -52,6 +52,16 @@
         <div id="exit-btn-wrap">
           <button id="exit-btn" type="button">Exit Game</button>
         </div>
+      </div>
+      <div id="level-row">
+        <span id="level-label">Level 1 • 30 sec</span>
+        <span id="turbo-indicator" class="turbo-badge" aria-hidden="true">Turbo</span>
+        <div id="level-progress-wrap">
+          <div id="level-progress-bar"><div id="level-progress-fill"></div></div>
+          <span id="level-progress-icon" aria-hidden="true">🛸</span>
+        </div>
+      </div>
+      <div id="lives-row">
         <div id="top-right-lives">
           <span id="pilot-lives-label">Pilot</span>
           <div id="lives">❤️❤️❤️❤️❤️</div>
@@ -60,11 +70,6 @@
             <span id="alien-lives">💚💚💚💚💚</span>
           </div>
         </div>
-      </div>
-      <div id="level-row">
-        <span id="level-label">Level 1</span>
-        <span id="turbo-indicator" class="turbo-badge" aria-hidden="true">Turbo</span>
-        <div id="level-progress-bar"><div id="level-progress-fill"></div></div>
       </div>
       <div id="controls-hint">⬆️ ⬇️ Arrows = up/down · Space = Pause</div>
     </div>

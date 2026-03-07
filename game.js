@@ -236,7 +236,7 @@
   function updateUI() {
     if (scoreEl) scoreEl.textContent = 'Points: ' + score;
     if (livesEl) livesEl.textContent = '❤️'.repeat(lives);
-    if (levelLabelEl) levelLabelEl.textContent = 'Level ' + level;
+    if (levelLabelEl) levelLabelEl.textContent = 'Level ' + level + ' • ' + SECONDS_PER_LEVEL + ' sec';
     var pct = Math.min(100, (gameTimeLeft / SECONDS_PER_LEVEL) * 100);
     if (levelProgressFill) levelProgressFill.style.width = pct + '%';
     updateRocketPowerBar();
@@ -892,6 +892,7 @@
     scoreEl.classList.remove('visible');
     if (livesEl) livesEl.classList.remove('visible');
     if (document.getElementById('level-row')) document.getElementById('level-row').classList.remove('visible');
+    if (document.getElementById('lives-row')) document.getElementById('lives-row').classList.remove('visible');
     if (controlsHint) controlsHint.classList.remove('visible');
     if (document.getElementById('pause-btn-wrap')) document.getElementById('pause-btn-wrap').classList.remove('visible');
     if (exitBtnWrap) exitBtnWrap.classList.remove('visible');
@@ -938,6 +939,7 @@
     scoreEl.classList.add('visible');
     if (livesEl) livesEl.classList.add('visible');
     if (document.getElementById('level-row')) document.getElementById('level-row').classList.add('visible');
+    if (document.getElementById('lives-row')) document.getElementById('lives-row').classList.add('visible');
     if (document.getElementById('pause-btn-wrap')) document.getElementById('pause-btn-wrap').classList.add('visible');
     gameOverEl.classList.remove('visible');
     levelCompleteEl.classList.remove('visible');
