@@ -61,15 +61,6 @@
           </div>
         </div>
       </div>
-      <!-- Touch controls: under points bar, only on touch devices -->
-      <div id="touch-controls" class="touch-only" aria-label="On-screen controls">
-        <button type="button" id="touch-up" class="touch-btn">⬆️</button>
-        <button type="button" id="touch-turbo" class="touch-btn" title="Turbo (25 pts)">⚡</button>
-        <button type="button" id="touch-life" class="touch-btn" title="+1 life (25 pts)">❤️+</button>
-        <button type="button" id="touch-pause" class="touch-btn">⏸</button>
-        <button type="button" id="touch-shoot" class="touch-btn">🔫</button>
-        <button type="button" id="touch-down" class="touch-btn">⬇️</button>
-      </div>
       <div id="level-row">
         <span id="level-label">Level 1</span>
         <span id="turbo-indicator" class="turbo-badge" aria-hidden="true">Turbo</span>
@@ -77,6 +68,8 @@
       </div>
       <div id="controls-hint">⬆️ ⬇️ Arrows = up/down · Space = Pause</div>
     </div>
+
+    <!-- Touch controls: fixed footer, only on touch devices -->
 
     <!-- Start screen: instructions, difficulty, mode, pilot name, start -->
     <div id="instructions">
@@ -91,7 +84,7 @@
           <button id="diff-hard" type="button" class="mode-btn">🔥 Hard</button>
         </div>
         <label for="rocket-name-input" id="rocket-name-label">Type your rocket name:</label>
-        <input type="text" id="rocket-name-input" placeholder="e.g. Star Runner" maxlength="20" autocomplete="off" />
+        <input type="text" id="rocket-name-input" placeholder="e.g. Star Runner" value="Lexi" maxlength="20" autocomplete="off" />
         <button id="start-btn">Let's Go!</button>
     </div>
 
@@ -119,6 +112,16 @@
       <h1>Level complete! 🎉</h1>
       <p id="level-complete-msg">Next level starting...</p>
       <button id="next-level-btn">Next Level</button>
+    </div>
+
+    <!-- Touch controls: fixed at bottom (footer) -->
+    <div id="touch-controls" class="touch-only" aria-label="On-screen controls">
+      <button type="button" id="touch-up" class="touch-btn">⬆️</button>
+      <button type="button" id="touch-turbo" class="touch-btn" title="Turbo (25 pts)">⚡</button>
+      <button type="button" id="touch-life" class="touch-btn" title="+1 life (25 pts)">❤️+</button>
+      <button type="button" id="touch-pause" class="touch-btn">⏸</button>
+      <button type="button" id="touch-shoot" class="touch-btn">🔫</button>
+      <button type="button" id="touch-down" class="touch-btn">⬇️</button>
     </div>
 
     <!-- Exit confirmation (replaces native confirm) -->

@@ -570,7 +570,6 @@
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
-      if (controlsHint) controlsHint.textContent = '⬆️ ⬇️ Arrows · Enter = Shoot · H = +1 life (25 pts) · Shift = Turbo (25 pts) · Space = Pause';
       if (window.GameSounds) window.GameSounds.startMusic();
       updateUI();
       gameRunning = true;
@@ -595,7 +594,6 @@
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
       if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
-      if (controlsHint) controlsHint.textContent = '⬆️ ⬇️ Run · Enter = Shoot · H = +1 life (25 pts) · Shift = Turbo (25 pts) · Space = Pause';
       if (window.GameSounds) window.GameSounds.startMusic();
       updateUI();
       gameRunning = true;
@@ -940,10 +938,6 @@
     scoreEl.classList.add('visible');
     if (livesEl) livesEl.classList.add('visible');
     if (document.getElementById('level-row')) document.getElementById('level-row').classList.add('visible');
-    if (controlsHint) {
-      controlsHint.textContent = '⬆️ ⬇️ Arrows · H = +1 life (25 pts) · Shift = Turbo shot (25 pts, 10s) · Space = Pause';
-      controlsHint.classList.add('visible');
-    }
     if (document.getElementById('pause-btn-wrap')) document.getElementById('pause-btn-wrap').classList.add('visible');
     gameOverEl.classList.remove('visible');
     levelCompleteEl.classList.remove('visible');
@@ -980,6 +974,10 @@
     }
     if (e.key === 'Enter') {
       e.preventDefault();
+      if (!instructions.classList.contains('hidden')) {
+        startGame();
+        return;
+      }
       if (!gameRunning || gamePaused) return;
       if (level === 2) firePlayerLaser();
       if (level === 3) duelPlayerShoot();
