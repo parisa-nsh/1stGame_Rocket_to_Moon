@@ -46,11 +46,14 @@ window.GameConfig = {
   COLLISION_MARGIN: 28,
   INVINCIBLE_MS: 1500,
 
-  /* ─── Timed mode: 30 sec level 1–2, 60 sec level 3 ─────────────────────── */
+  /* ─── Timed mode: 30 sec level 1–2, 90 sec level 3 ─────────────────────── */
   SECONDS_PER_LEVEL: 30,
-  SECONDS_PER_LEVEL_3: 60,
+  SECONDS_PER_LEVEL_3: 90,
   TIMER_UPDATE_INTERVAL_MS: 100,
   TIMER_WARNING_AT_SECONDS: 10,
+
+  /* ─── Level 3: restart from level 3 on game over (points deducted) ─────── */
+  LEVEL3_RESTART_POINTS_PENALTY: 50,
 
   /* ─── Bubble shield (footer button / B key): bullet-proof 10 sec ────────── */
   BUBBLE_DURATION_MS: 10000,

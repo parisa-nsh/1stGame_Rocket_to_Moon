@@ -362,6 +362,18 @@ body {
   letter-spacing: 2px;
 }
 
+/* Level 3 hard mode: second alien lives (hidden until level 3 hard) */
+.alien2-only {
+  display: none !important;
+}
+#top-right-lives .alien2-only.visible {
+  display: inline-block !important;
+}
+#top-right-lives #alien-lives-wrap-2.visible {
+  display: flex !important;
+  opacity: 1 !important;
+}
+
 #exit-btn {
   font-size: clamp(0.75rem, 2vw, 0.85rem);
   padding: clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 12px);
