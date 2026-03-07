@@ -40,6 +40,8 @@ window.GameConfig = {
   DUEL_PLAYER_SPEED: 2,
   DUEL_PLAYER_Y_MIN: 20,
   DUEL_PLAYER_Y_MAX: 80,
+  ALIEN_LIVES: 5,
+  ALIEN_HIT_POINTS: 50,
 
   /* ─── Collision & invincibility ───────────────────────────────────────── */
   COLLISION_MARGIN: 28,

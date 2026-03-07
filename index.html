@@ -50,6 +50,10 @@
           <button id="pause-btn" type="button">Pause</button>
         </div>
         <div id="lives">❤️❤️❤️❤️❤️</div>
+        <div id="alien-lives-wrap" class="alien-lives-only" aria-hidden="true">
+          <span id="alien-lives-label">Aliens</span>
+          <span id="alien-lives">💚💚💚💚💚</span>
+        </div>
         <div id="exit-btn-wrap">
           <button id="exit-btn" type="button">Exit Game</button>
         </div>
@@ -105,14 +109,14 @@
       <button id="next-level-btn">Next Level</button>
     </div>
 
-    <!-- Touch controls: shown on mobile so you can play without a keyboard -->
+    <!-- Touch controls: order = Up, Turbo, Heart, Pause, Shoot, Down -->
     <div id="touch-controls" class="touch-only" aria-label="On-screen controls">
       <button type="button" id="touch-up" class="touch-btn">⬆️</button>
-      <button type="button" id="touch-down" class="touch-btn">⬇️</button>
-      <button type="button" id="touch-shoot" class="touch-btn">🔫</button>
-      <button type="button" id="touch-life" class="touch-btn" title="+1 life (25 pts)">❤️+</button>
       <button type="button" id="touch-turbo" class="touch-btn" title="Turbo (25 pts)">⚡</button>
+      <button type="button" id="touch-life" class="touch-btn" title="+1 life (25 pts)">❤️+</button>
       <button type="button" id="touch-pause" class="touch-btn">⏸</button>
+      <button type="button" id="touch-shoot" class="touch-btn">🔫</button>
+      <button type="button" id="touch-down" class="touch-btn">⬇️</button>
     </div>
   </div>
 

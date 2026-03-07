@@ -53,13 +53,14 @@
   const STARTING_POINTS = cfg.STARTING_POINTS != null ? cfg.STARTING_POINTS : 10;
   const SHIP_POINTS = cfg.SHIP_POINTS != null ? cfg.SHIP_POINTS : 20;
   const TOTAL_LIVES = cfg.TOTAL_LIVES != null ? cfg.TOTAL_LIVES : 5;
-  const LEVEL3_ALIEN_HP = 5;
   const INVINCIBLE_MS = cfg.INVINCIBLE_MS != null ? cfg.INVINCIBLE_MS : 1500;
   const COLLISION_MARGIN = cfg.COLLISION_MARGIN != null ? cfg.COLLISION_MARGIN : 28;
   const LASER_SPEED = cfg.LASER_SPEED != null ? cfg.LASER_SPEED : 12;
   const DUEL_LASER_SPEED = cfg.DUEL_LASER_SPEED != null ? cfg.DUEL_LASER_SPEED : 14;
   const DUEL_ALIEN_SHOOT_INTERVAL = cfg.DUEL_ALIEN_SHOOT_INTERVAL_MS != null ? cfg.DUEL_ALIEN_SHOOT_INTERVAL_MS : 1200;
   const DUEL_ALIEN_MOVE_INTERVAL = cfg.DUEL_ALIEN_MOVE_INTERVAL_MS != null ? cfg.DUEL_ALIEN_MOVE_INTERVAL_MS : 600;
+  const ALIEN_LIVES = cfg.ALIEN_LIVES != null ? cfg.ALIEN_LIVES : 5;
+  const ALIEN_HIT_POINTS = cfg.ALIEN_HIT_POINTS != null ? cfg.ALIEN_HIT_POINTS : 50;
   const TIMER_UPDATE_INTERVAL_MS = cfg.TIMER_UPDATE_INTERVAL_MS != null ? cfg.TIMER_UPDATE_INTERVAL_MS : 100;
   const TIMER_WARNING_AT_SECONDS = cfg.TIMER_WARNING_AT_SECONDS != null ? cfg.TIMER_WARNING_AT_SECONDS : 10;
   const HARD_SPEED_MULTIPLIER = cfg.HARD_SPEED_MULTIPLIER != null ? cfg.HARD_SPEED_MULTIPLIER : 1.15;
@@ -84,7 +85,7 @@
   let keys = { ArrowUp: false, ArrowDown: false };
   let scrollSpeed = SCROLL_SPEED_BASE;
   let gamePaused = false;
-  let alienHP = LEVEL3_ALIEN_HP;
+  let alienLives = ALIEN_LIVES;
   let duelAlienShootTimer = null;
   let duelAlienMoveTimer = null;
   let duelPlayerYPercent = 50;
@@ -212,6 +213,14 @@
     updateRocketPowerBar();
     var turboEl = document.getElementById('turbo-indicator');
     if (turboEl) turboEl.classList.toggle('active', isTurboActive());
+    var alienLivesEl = document.getElementById('alien-lives');
+    var alienWrap = document.getElementById('alien-lives-wrap');
+    if (level === 3) {
+      if (alienLivesEl) alienLivesEl.textContent = '💚'.repeat(Math.max(0, alienLives));
+      if (alienWrap) alienWrap.classList.add('visible');
+    } else {
+      if (alienWrap) alienWrap.classList.remove('visible');
+    }
   }
 
   /* ─── 6. Spawners ──────────────────────────────────────────────────────── */
@@ -423,6 +432,35 @@
   }
 
   /* ─── 9. Level complete & next level ───────────────────────────────────── */
+  function getPilotDisplayName() {
+    if (!pilotNameEl || !pilotNameEl.textContent) return 'Player';
+    var t = pilotNameEl.textContent.trim();
+    if (t.indexOf('Pilot:') === 0) return t.replace(/^Pilot:\s*/i, '').trim() || 'Player';
+    return t || 'Player';
+  }
+
+  function levelCompleteDuelWin() {
+    gameRunning = false;
+    if (duelAlienShootTimer) clearInterval(duelAlienShootTimer);
+    if (duelAlienMoveTimer) clearInterval(duelAlienMoveTimer);
+    if (timerInterval) clearInterval(timerInterval);
+    duelAlienShootTimer = null;
+    duelAlienMoveTimer = null;
+    timerInterval = null;
+    if (window.GameSounds) {
+      window.GameSounds.stopMusic();
+      window.GameSounds.playHurray();
+    }
+    spawnBalloons();
+    var name = getPilotDisplayName();
+    if (levelCompleteMsg) levelCompleteMsg.textContent = name + ' you are the winner!';
+    var h1 = levelCompleteEl ? levelCompleteEl.querySelector('h1') : null;
+    if (h1) h1.textContent = 'You won! 🎉';
+    if (nextLevelBtn) nextLevelBtn.textContent = 'Play Again';
+    level = 4;
+    levelCompleteEl.classList.add('visible');
+  }
+
   function levelComplete() {
     gameRunning = false;
     if (obstacleTimer) clearInterval(obstacleTimer);
@@ -452,6 +490,8 @@
       if (levelCompleteMsg) levelCompleteMsg.textContent = 'You won! Total: ' + score + ' points 🌟';
       if (nextLevelBtn) nextLevelBtn.textContent = 'Play Again';
     }
+    var h1 = levelCompleteEl ? levelCompleteEl.querySelector('h1') : null;
+    if (h1) h1.textContent = 'Level complete! 🎉';
     levelCompleteEl.classList.add('visible');
   }
 
@@ -510,6 +550,7 @@
       duelPlayerYPercent = 50;
       duelAlienYPercent = 50;
       duelAlien2YPercent = 30;
+      alienLives = ALIEN_LIVES;
       gameTimeLeft = SECONDS_PER_LEVEL;
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
       if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
@@ -659,16 +700,26 @@
       var lrect = { left: lr.left - containerRect.left, right: lr.right - containerRect.left, top: lr.top - containerRect.top, bottom: lr.bottom - containerRect.top };
       if (rectsOverlap(lrect, ar)) {
         node.remove();
-        score += SHIP_POINTS;
+        score += ALIEN_HIT_POINTS;
+        alienLives--;
         updateUI();
         if (window.GameSounds) window.GameSounds.playCrash();
+        if (alienLives <= 0) {
+          levelCompleteDuelWin();
+          return;
+        }
         return;
       }
       if (ar2 && rectsOverlap(lrect, ar2)) {
         node.remove();
-        score += SHIP_POINTS;
+        score += ALIEN_HIT_POINTS;
+        alienLives--;
         updateUI();
         if (window.GameSounds) window.GameSounds.playCrash();
+        if (alienLives <= 0) {
+          levelCompleteDuelWin();
+          return;
+        }
         return;
       }
     }

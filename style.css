@@ -256,6 +256,25 @@ body {
   pointer-events: auto;
 }
 
+.alien-lives-only {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: clamp(0.85rem, 2.5vw, 1rem);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.alien-lives-only.visible {
+  display: flex;
+  opacity: 1;
+}
+#alien-lives-label {
+  color: rgba(255,255,255,0.9);
+}
+#alien-lives {
+  letter-spacing: 2px;
+}
+
 #exit-btn {
   font-size: clamp(0.75rem, 2vw, 0.85rem);
   padding: clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 12px);
