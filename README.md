@@ -11,9 +11,15 @@ A **web game for kids**: fly a rocket through the night sky across three levels.
 - **Level 3:** Moon duel – move and shoot to hit aliens while dodging their lasers.
 - **H** = buy +1 life (25 pts). **Shift** = Turbo shot for 10 sec (25 pts). **Space** = Pause.
 
-## Install on your iPhone (play as an app)
+## Install on your iPhone (no App Store)
 
 The game is a **Progressive Web App (PWA)**. You can add it to your home screen and open it like an app.
+
+**Quick path:** Share or open **https://rocketmoon.game** — then:
+- **iPhone:** Safari → Share → **Add to Home Screen**
+- **Android:** Chrome → Menu (⋮) → **Add to Home screen** or **Install app**
+
+(If using GitHub Pages without a custom domain, enable Pages in repo Settings, then use your `https://username.github.io/repo/` URL.)
 
 1. **Put the game on the web**  
    You need the game to be served over **HTTPS** (not `file://`). For example:
@@ -22,7 +28,7 @@ The game is a **Progressive Web App (PWA)**. You can add it to your home screen 
    - **Your own server:** Upload the folder to any web host that serves static files.
 
 2. **On your iPhone**  
-   - Open **Safari** and go to the game’s URL (e.g. `https://yourusername.github.io/your-repo/`).
+   - Open **Safari** and go to the game’s URL (e.g. **https://rocketmoon.game**).
    - Tap the **Share** button (square with arrow).
    - Tap **Add to Home Screen**.
    - Name it (e.g. “Rocket Moon”) and tap **Add**.

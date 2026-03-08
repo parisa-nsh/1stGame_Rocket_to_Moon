@@ -687,6 +687,31 @@ body {
   box-shadow: 0 0 0 3px var(--accent);
 }
 
+#share-qr-wrap {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 158, 205, 0.25);
+}
+
+.share-qr-label {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 8px;
+}
+
+.share-qr-box {
+  display: inline-block;
+  background: #fff;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+#share-qr-wrap img {
+  display: block;
+  border-radius: 4px;
+}
+
 #timer-wrap {
   display: none;
   align-items: center;
