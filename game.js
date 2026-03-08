@@ -58,6 +58,7 @@
   const COLLISION_MARGIN = cfg.COLLISION_MARGIN != null ? cfg.COLLISION_MARGIN : 28;
   const LASER_SPEED = cfg.LASER_SPEED != null ? cfg.LASER_SPEED : 12;
   const DUEL_LASER_SPEED = cfg.DUEL_LASER_SPEED != null ? cfg.DUEL_LASER_SPEED : 14;
+  const DUEL_ALIEN_LASER_SPEED = cfg.DUEL_ALIEN_LASER_SPEED != null ? cfg.DUEL_ALIEN_LASER_SPEED : DUEL_LASER_SPEED;
   const DUEL_ALIEN_SHOOT_INTERVAL = cfg.DUEL_ALIEN_SHOOT_INTERVAL_MS != null ? cfg.DUEL_ALIEN_SHOOT_INTERVAL_MS : 1200;
   const DUEL_ALIEN_MOVE_INTERVAL = cfg.DUEL_ALIEN_MOVE_INTERVAL_MS != null ? cfg.DUEL_ALIEN_MOVE_INTERVAL_MS : 600;
   const ALIEN_LIVES = cfg.ALIEN_LIVES != null ? cfg.ALIEN_LIVES : 5;
@@ -885,7 +886,7 @@
       laser.className = 'duel-laser-alien';
       laser.style.left = (alienEl.left - cr.left - 30) + 'px';
       laser.style.top = (alienEl.top - cr.top + alienEl.height / 2 - 3) + 'px';
-      laser.dataset.dx = -DUEL_LASER_SPEED;
+      laser.dataset.dx = -DUEL_ALIEN_LASER_SPEED;
       duelAlienLasersEl.appendChild(laser);
     }
     if (gameHard && duelAlien2El && now >= alien2FrozenUntil) {
@@ -894,7 +895,7 @@
       laser2.className = 'duel-laser-alien';
       laser2.style.left = (alien2El.left - cr.left - 30) + 'px';
       laser2.style.top = (alien2El.top - cr.top + alien2El.height / 2 - 3) + 'px';
-      laser2.dataset.dx = -DUEL_LASER_SPEED;
+      laser2.dataset.dx = -DUEL_ALIEN_LASER_SPEED;
       duelAlienLasersEl.appendChild(laser2);
     }
   }
@@ -944,7 +945,7 @@
 
     Array.from(duelAlienLasersEl.children).forEach(function (node) {
       var left = parseFloat(node.style.left) || width;
-      var dx = parseFloat(node.dataset.dx) || -DUEL_LASER_SPEED;
+      var dx = parseFloat(node.dataset.dx) || -DUEL_ALIEN_LASER_SPEED;
       node.style.left = (left + dx * (dt / 16)) + 'px';
       if (parseFloat(node.style.left) < -50) node.remove();
     });

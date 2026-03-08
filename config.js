@@ -37,12 +37,13 @@ window.GameConfig = {
 
   /* ─── Level 3 (duel) ───────────────────────────────────────────────────── */
   DUEL_LASER_SPEED: 14,
-  DUEL_ALIEN_SHOOT_INTERVAL_MS: 1200,
-  DUEL_ALIEN_MOVE_INTERVAL_MS: 600,
+  DUEL_ALIEN_LASER_SPEED: 17,
+  DUEL_ALIEN_SHOOT_INTERVAL_MS: 950,
+  DUEL_ALIEN_MOVE_INTERVAL_MS: 450,
   DUEL_PLAYER_SPEED: 2,
   DUEL_PLAYER_Y_MIN: 20,
   DUEL_PLAYER_Y_MAX: 80,
-  ALIEN_LIVES: 5,
+  ALIEN_LIVES: 8,
   ALIEN_HIT_POINTS: 50,
 
   /* ─── Collision & invincibility ───────────────────────────────────────── */
