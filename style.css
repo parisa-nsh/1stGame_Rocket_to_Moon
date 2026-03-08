@@ -46,19 +46,21 @@ body {
   padding: var(--safe-top) var(--safe-left) var(--safe-bottom) var(--safe-right);
   background: var(--sky-dark);
   font-family: 'Fredoka', sans-serif;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #game-container {
   position: relative;
   width: 100%;
-  max-width: min(100vw, 560px);
+  max-width: 100%;
   height: 100vh;
   height: 100dvh;
   max-height: min(100dvh, 900px);
   border-radius: clamp(0px, 3vw, 16px);
   overflow: hidden;
   box-shadow: 0 0 50px rgba(255, 158, 205, 0.25);
+  flex-shrink: 0;
 }
 
 /* Night sky – soft and magical */
@@ -481,6 +483,18 @@ body {
   outline-offset: 2px;
 }
 
+/* Mobile: keep touch controls above browser UI (e.g. Safari toolbar) */
+@media (max-width: 768px), (max-height: 700px) {
+  #touch-controls.touch-only {
+    bottom: 0;
+    padding-bottom: max(52px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+  }
+  /* Reserve space so instructions scroll content doesn't sit under touch bar */
+  #instructions {
+    max-height: calc(100% - 90px);
+  }
+}
+
 /* Exit confirmation modal */
 .modal-overlay {
   position: absolute;
@@ -559,9 +573,11 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(calc(100% - 24px), 420px);
+  width: calc(100% - 24px);
+  max-width: 420px;
   max-height: calc(100% - 24px);
   overflow-y: auto;
+  overflow-x: hidden;
   pointer-events: auto;
   text-align: center;
   padding: clamp(16px, 4vw, 24px) clamp(14px, 4vw, 20px);
@@ -1107,5 +1123,19 @@ button:active {
   }
   #instructions p {
     margin-bottom: 6px;
+  }
+}
+
+/* Narrow phones: prevent horizontal overflow on start screen */
+@media (max-width: 400px) {
+  #instructions {
+    width: calc(100% - 16px);
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .level-btn {
+    min-width: 72px;
+    padding: 10px 12px;
+    font-size: 0.9rem;
   }
 }
