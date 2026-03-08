@@ -762,9 +762,9 @@
     var top = y - rect.top;
     if (left < 0 || top < 0 || left > rect.width || top > rect.height) return;
     var shelter = document.createElement('div');
-    shelter.className = 'duel-shelter';
+    shelter.className = 'duel-shelter duel-shelter-ice';
     shelter.setAttribute('aria-hidden', 'true');
-    shelter.textContent = '🪐';
+    shelter.textContent = '🧊';
     shelter.style.left = left + 'px';
     shelter.style.top = top + 'px';
     duelSheltersEl.appendChild(shelter);

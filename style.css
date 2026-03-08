@@ -946,6 +946,15 @@ button:active {
   pointer-events: none;
 }
 
+/* Level 4: ice block shelters (instead of Jupiter) */
+#duel-shelters .duel-shelter-ice {
+  filter: drop-shadow(0 0 8px rgba(180, 220, 255, 0.9))
+          drop-shadow(0 0 16px rgba(150, 210, 255, 0.6));
+  box-shadow: 0 0 0 3px rgba(200, 235, 255, 0.7),
+              inset 0 0 12px rgba(220, 245, 255, 0.3);
+  border-radius: 8px;
+}
+
 #duel-player {
   position: absolute;
   left: 18%;
