@@ -581,31 +581,38 @@ body {
   text-shadow: 0 0 20px rgba(255, 217, 61, 0.4);
 }
 
-#start-icons {
+.level-choose-label {
+  font-size: var(--font-instruction);
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: clamp(10px, 2.5vw, 14px);
+}
+
+#level-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: clamp(12px, 4vw, 20px);
-  margin-bottom: clamp(14px, 3vw, 20px);
+  gap: clamp(10px, 3vw, 14px);
+  margin-bottom: clamp(14px, 3vw, 18px);
 }
 
-.start-icon {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.start-icon-emoji {
-  font-size: clamp(36px, 10vw, 48px);
-  line-height: 1;
-  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
-}
-
-.start-icon-label {
-  font-size: clamp(0.7rem, 2vw, 0.85rem);
-  color: rgba(255, 255, 255, 0.9);
+.level-btn {
+  min-width: clamp(100px, 28vw, 120px);
+  padding: clamp(12px, 3vw, 14px) clamp(16px, 4vw, 20px);
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
   font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 158, 205, 0.5);
+  background: linear-gradient(180deg, rgba(255, 182, 218, 0.35), rgba(157, 78, 180, 0.4));
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.level-btn:hover,
+.level-btn:focus {
+  transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(255, 158, 205, 0.5);
+  outline: none;
 }
 
 #instructions p {

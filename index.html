@@ -43,7 +43,7 @@
       <div id="top-row">
         <div id="score-wrap">
           <span id="pilot-name"></span>
-          <span id="score">Points: 10</span>
+          <span id="score">Points: 100</span>
         </div>
         <div id="timer-wrap" aria-hidden="true">
           <span id="game-timer">1:00</span>
@@ -82,23 +82,23 @@
 
     <!-- Touch controls: fixed footer, only on touch devices -->
 
-    <!-- Start screen: instructions, difficulty, mode, pilot name, start -->
+    <!-- Start screen: level choice -->
     <div id="instructions">
         <h2>Rocket to the Moon!</h2>
-        <div id="start-icons" aria-hidden="true">
-          <span class="start-icon" title="Pilot"><span class="start-icon-emoji">🧑‍🚀</span><span class="start-icon-label">Pilot</span></span>
-          <span class="start-icon" title="Alien"><span class="start-icon-emoji">👽</span><span class="start-icon-label">Alien</span></span>
-          <span class="start-icon" title="Stars"><span class="start-icon-emoji">⭐</span><span class="start-icon-label">Stars</span></span>
-          <span class="start-icon" title="Ships"><span class="start-icon-emoji">🛸</span><span class="start-icon-label">Ships</span></span>
+        <p class="level-choose-label">Choose level to start (100 points):</p>
+        <div id="level-buttons">
+          <button type="button" id="start-level-1" class="level-btn">Level 1</button>
+          <button type="button" id="start-level-2" class="level-btn">Level 2</button>
+          <button type="button" id="start-level-3" class="level-btn">Level 3</button>
+          <button type="button" id="start-level-4" class="level-btn">Level 4</button>
         </div>
         <p id="difficulty-label">Difficulty:</p>
         <div id="difficulty-buttons">
           <button id="diff-easy" type="button" class="mode-btn chosen">😊 Easy</button>
           <button id="diff-hard" type="button" class="mode-btn">🔥 Hard</button>
         </div>
-        <label for="rocket-name-input" id="rocket-name-label">Type your rocket name:</label>
+        <label for="rocket-name-input" id="rocket-name-label">Pilot name:</label>
         <input type="text" id="rocket-name-input" placeholder="e.g. Star Runner" value="Lexi" maxlength="20" autocomplete="off" />
-        <button id="start-btn">Let's Go!</button>
     </div>
 
     <!-- Footer: hidden (time bar removed) -->

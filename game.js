@@ -14,7 +14,6 @@
   const levelProgressFill = document.getElementById('level-progress-fill');
   const controlsHint = document.getElementById('controls-hint');
   const instructions = document.getElementById('instructions');
-  const startBtn = document.getElementById('start-btn');
   const gameOverEl = document.getElementById('game-over');
   const finalScoreEl = document.getElementById('final-score');
   const restartBtn = document.getElementById('restart-btn');
@@ -52,7 +51,7 @@
   const SCROLL_SPEED_BASE = cfg.SCROLL_SPEED_BASE != null ? cfg.SCROLL_SPEED_BASE : 2.45;
   const STAR_POINTS = cfg.STAR_POINTS != null ? cfg.STAR_POINTS : 10;
   const CRASH_POINTS_LOST = cfg.CRASH_POINTS_LOST != null ? cfg.CRASH_POINTS_LOST : 10;
-  const STARTING_POINTS = cfg.STARTING_POINTS != null ? cfg.STARTING_POINTS : 10;
+  const STARTING_POINTS = cfg.STARTING_POINTS != null ? cfg.STARTING_POINTS : 100;
   const SHIP_POINTS = cfg.SHIP_POINTS != null ? cfg.SHIP_POINTS : 20;
   const TOTAL_LIVES = cfg.TOTAL_LIVES != null ? cfg.TOTAL_LIVES : 5;
   const INVINCIBLE_MS = cfg.INVINCIBLE_MS != null ? cfg.INVINCIBLE_MS : 1500;
@@ -982,8 +981,9 @@
       var lr = node.getBoundingClientRect();
       var lrect = { left: lr.left - containerRect.left, right: lr.right - containerRect.left, top: lr.top - containerRect.top, bottom: lr.bottom - containerRect.top };
       if (rectsOverlap(lrect, ar)) {
+        var isIceHit = node.dataset.ice === '1';
         node.remove();
-        if (node.dataset.ice === '1') {
+        if (isIceHit) {
           alienFrozenUntil = Date.now() + FREEZE_DURATION_MS;
           updateUI();
         } else {
@@ -999,8 +999,9 @@
         continue;
       }
       if (ar2 && rectsOverlap(lrect, ar2)) {
+        var isIceHit2 = node.dataset.ice === '1';
         node.remove();
-        if (node.dataset.ice === '1') {
+        if (isIceHit2) {
           alien2FrozenUntil = Date.now() + FREEZE_DURATION_MS;
           updateUI();
         } else {
@@ -1193,14 +1194,19 @@
   }
 
   function startGame() {
+    startGameAtLevel(1);
+  }
+
+  function startGameAtLevel(startLevel) {
     closeExitModal();
     gameOverAtLevel3 = false;
+    gameOverAtLevel4 = false;
     var rocketName = (rocketNameInput && rocketNameInput.value) ? rocketNameInput.value.trim() : '';
     if (!rocketName) rocketName = 'Rocket';
     if (pilotNameEl) pilotNameEl.textContent = 'Pilot: ' + rocketName;
     if (scoreWrap) scoreWrap.classList.add('visible');
 
-    level = 1;
+    level = startLevel;
     score = STARTING_POINTS;
     lives = TOTAL_LIVES;
     rocketLane = 1;
@@ -1213,19 +1219,27 @@
     bubbleUntil = 0;
     keys.ArrowUp = false;
     keys.ArrowDown = false;
-    gameTimeLeft = SECONDS_PER_LEVEL;
     gameHard = diffHardBtn && diffHardBtn.classList.contains('chosen');
     musicSpedUp = false;
 
-    if (skyEl) skyEl.classList.add('visible');
-    if (duelSceneEl) duelSceneEl.classList.remove('visible');
-    rocket.style.display = '';
+    if (obstacleTimer) clearInterval(obstacleTimer);
+    if (starTimer) clearInterval(starTimer);
+    if (shipTimer) clearInterval(shipTimer);
+    if (duelAlienShootTimer) clearInterval(duelAlienShootTimer);
+    if (duelAlienMoveTimer) clearInterval(duelAlienMoveTimer);
+    obstacleTimer = null;
+    starTimer = null;
+    shipTimer = null;
+    duelAlienShootTimer = null;
+    duelAlienMoveTimer = null;
+
     collectiblesEl.innerHTML = '';
     obstaclesEl.innerHTML = '';
     if (playerLasersEl) playerLasersEl.innerHTML = '';
     if (enemyShipsEl) enemyShipsEl.innerHTML = '';
     if (duelPlayerLasersEl) duelPlayerLasersEl.innerHTML = '';
     if (duelAlienLasersEl) duelAlienLasersEl.innerHTML = '';
+    if (duelSheltersEl) duelSheltersEl.innerHTML = '';
 
     if (window.GameSounds) {
       window.GameSounds.init();
@@ -1240,22 +1254,96 @@
     gameOverEl.classList.remove('visible');
     levelCompleteEl.classList.remove('visible');
     if (pauseOverlay) pauseOverlay.classList.remove('visible');
-    moon.classList.remove('visible');
     if (nextLevelBtn) nextLevelBtn.textContent = 'Next Level';
     if (exitBtnWrap) exitBtnWrap.classList.add('visible');
-    if (timerWrap) {
-      timerWrap.classList.add('visible');
-      timerWrap.classList.remove('warning');
+
+    if (startLevel === 1) {
+      gameTimeLeft = SECONDS_PER_LEVEL;
+      if (skyEl) skyEl.classList.add('visible');
+      if (duelSceneEl) duelSceneEl.classList.remove('visible');
+      rocket.style.display = '';
+      if (timerWrap) {
+        timerWrap.classList.add('visible');
+        timerWrap.classList.remove('warning');
+        if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
+      }
+      setRocketPosition();
+      updateUI();
+      gameRunning = true;
+      gamePaused = false;
+      obstacleTimer = setInterval(spawnObstacle, getObstacleInterval());
+      starTimer = setInterval(spawnStar, getStarInterval());
+    } else if (startLevel === 2) {
+      gameTimeLeft = SECONDS_PER_LEVEL;
+      if (skyEl) skyEl.classList.add('visible');
+      if (duelSceneEl) duelSceneEl.classList.remove('visible');
+      rocket.style.display = '';
+      if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
       if (gameTimerEl) gameTimerEl.textContent = '0:' + (SECONDS_PER_LEVEL < 10 ? '0' : '') + SECONDS_PER_LEVEL;
+      if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
+      if (timerInterval) clearInterval(timerInterval);
       timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
+      setRocketPosition();
+      updateUI();
+      gameRunning = true;
+      gamePaused = false;
+      shipTimer = setInterval(spawnEnemyShip, getShipSpawnInterval());
+    } else if (startLevel === 3) {
+      gameTimeLeft = SECONDS_PER_LEVEL_3;
+      if (skyEl) skyEl.classList.remove('visible');
+      if (duelSceneEl) duelSceneEl.classList.add('visible');
+      if (duelSceneEl) duelSceneEl.classList.remove('level-4');
+      if (gameHard && duelSceneEl) duelSceneEl.classList.add('hard-mode');
+      else if (duelSceneEl) duelSceneEl.classList.remove('hard-mode');
+      rocket.style.display = 'none';
+      duelPlayerYPercent = 50;
+      duelAlienYPercent = 50;
+      duelAlien2YPercent = 30;
+      alienLives = ALIEN_LIVES;
+      alien2Lives = gameHard ? ALIEN_LIVES : 0;
+      iceModeUntil = 0;
+      alienFrozenUntil = 0;
+      alien2FrozenUntil = 0;
+      if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
+      if (gameTimerEl) gameTimerEl.textContent = SECONDS_PER_LEVEL_3 >= 60 ? '1:' + (SECONDS_PER_LEVEL_3 % 60 < 10 ? '0' : '') + (SECONDS_PER_LEVEL_3 % 60) : '0:' + (SECONDS_PER_LEVEL_3 < 10 ? '0' : '') + SECONDS_PER_LEVEL_3;
+      if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
+      updateUI();
+      gameRunning = true;
+      gamePaused = false;
+      duelAlienShootTimer = setInterval(duelAlienShoot, DUEL_ALIEN_SHOOT_INTERVAL);
+      duelAlienMoveTimer = setInterval(duelAlienMove, DUEL_ALIEN_MOVE_INTERVAL);
+    } else if (startLevel === 4) {
+      gameTimeLeft = SECONDS_PER_LEVEL_3;
+      if (skyEl) skyEl.classList.remove('visible');
+      if (duelSceneEl) duelSceneEl.classList.add('visible');
+      if (duelSceneEl) duelSceneEl.classList.add('level-4');
+      if (gameHard && duelSceneEl) duelSceneEl.classList.add('hard-mode');
+      else if (duelSceneEl) duelSceneEl.classList.remove('hard-mode');
+      rocket.style.display = 'none';
+      duelPlayerYPercent = 50;
+      duelAlienYPercent = 50;
+      duelAlien2YPercent = 30;
+      alienLives = ALIEN_LIVES;
+      alien2Lives = gameHard ? ALIEN_LIVES : 0;
+      iceModeUntil = 0;
+      alienFrozenUntil = 0;
+      alien2FrozenUntil = 0;
+      if (window.GameSounds && window.GameSounds.setMusicTempo) window.GameSounds.setMusicTempo(450);
+      if (gameTimerEl) gameTimerEl.textContent = SECONDS_PER_LEVEL_3 >= 60 ? '1:' + (SECONDS_PER_LEVEL_3 % 60 < 10 ? '0' : '') + (SECONDS_PER_LEVEL_3 % 60) : '0:' + (SECONDS_PER_LEVEL_3 < 10 ? '0' : '') + SECONDS_PER_LEVEL_3;
+      if (timerWrap) { timerWrap.classList.remove('warning'); timerWrap.classList.add('visible'); }
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, TIMER_UPDATE_INTERVAL_MS);
+      updateUI();
+      gameRunning = true;
+      gamePaused = false;
+      duelAlienShootTimer = setInterval(duelAlienShoot, DUEL_ALIEN_SHOOT_INTERVAL);
+      duelAlienMoveTimer = setInterval(duelAlienMove, DUEL_ALIEN_MOVE_INTERVAL);
     }
 
-    setRocketPosition();
-    updateUI();
-    gameRunning = true;
-    gamePaused = false;
-    obstacleTimer = setInterval(spawnObstacle, getObstacleInterval());
-    starTimer = setInterval(spawnStar, getStarInterval());
     lastTime = performance.now();
     requestAnimationFrame(gameTick);
   }
@@ -1273,7 +1361,7 @@
     if (e.key === 'Enter') {
       e.preventDefault();
       if (!instructions.classList.contains('hidden')) {
-        startGame();
+        startGameAtLevel(1);
         return;
       }
       if (!gameRunning || gamePaused) return;
@@ -1291,7 +1379,7 @@
     }
     if (e.key === 'Shift') {
       e.preventDefault();
-      if (gameRunning && !gamePaused && score >= COST_TURBO_SHOT && !isTurboActive() && !isIceModeActive()) {
+      if (!e.repeat && gameRunning && !gamePaused && score >= COST_TURBO_SHOT && !isTurboActive() && !isIceModeActive()) {
         shiftKeyDownTime = Date.now();
       }
     }
@@ -1332,7 +1420,15 @@
   };
 
   /* ─── 13. Event binding ────────────────────────────────────────────────── */
-  startBtn.addEventListener('click', startGame);
+  var startLevel1Btn = document.getElementById('start-level-1');
+  var startLevel2Btn = document.getElementById('start-level-2');
+  var startLevel3Btn = document.getElementById('start-level-3');
+  var startLevel4Btn = document.getElementById('start-level-4');
+  if (startLevel1Btn) startLevel1Btn.addEventListener('click', function () { startGameAtLevel(1); });
+  if (startLevel2Btn) startLevel2Btn.addEventListener('click', function () { startGameAtLevel(2); });
+  if (startLevel3Btn) startLevel3Btn.addEventListener('click', function () { startGameAtLevel(3); });
+  if (startLevel4Btn) startLevel4Btn.addEventListener('click', function () { startGameAtLevel(4); });
+
   restartBtn.addEventListener('click', function () {
     if (gameOverAtLevel3) startLevel3Retry();
     else if (gameOverAtLevel4) {

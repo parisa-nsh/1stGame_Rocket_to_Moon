@@ -4,7 +4,7 @@
  */
 window.GameConfig = {
   /* ─── Level & scoring ─────────────────────────────────────────────────── */
-  STARTING_POINTS: 10,
+  STARTING_POINTS: 100,
   STAR_POINTS: 10,
   CRASH_POINTS_LOST: 10,
   SHIP_POINTS: 20,
