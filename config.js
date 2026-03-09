@@ -45,6 +45,7 @@ window.GameConfig = {
   DUEL_PLAYER_Y_MAX: 80,
   ALIEN_LIVES: 8,
   ALIEN_HIT_POINTS: 50,
+  DUEL_ICE_BLOCK_COUNT: 4,
 
   /* ─── Collision & invincibility ───────────────────────────────────────── */
   COLLISION_MARGIN: 28,

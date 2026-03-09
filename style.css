@@ -1006,6 +1006,29 @@ button:active {
   display: none;
 }
 
+#duel-ice-blocks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+}
+
+#duel-ice-blocks .duel-ice-block {
+  position: absolute;
+  width: clamp(32px, 10vw, 52px);
+  height: clamp(32px, 10vw, 52px);
+  transform: translate(-50%, -50%);
+  background: linear-gradient(145deg, rgba(200, 235, 255, 0.85) 0%, rgba(160, 210, 255, 0.75) 50%, rgba(140, 195, 245, 0.9) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(180, 220, 255, 0.7),
+              inset 0 2px 8px rgba(255, 255, 255, 0.4);
+}
+
+#duel-scene.level-4 #duel-ice-blocks {
+  display: none;
+}
+
 #duel-shelters {
   position: absolute;
   inset: 0;

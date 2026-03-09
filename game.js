@@ -31,6 +31,7 @@
   const skyEl = document.getElementById('sky');
   const duelSceneEl = document.getElementById('duel-scene');
   const duelJupiterEl = document.getElementById('duel-jupiter');
+  const duelIceBlocksEl = document.getElementById('duel-ice-blocks');
   const duelSheltersEl = document.getElementById('duel-shelters');
   const duelPlayerEl = document.getElementById('duel-player');
   const duelAlienEl = document.getElementById('duel-alien');
@@ -63,6 +64,7 @@
   const DUEL_ALIEN_MOVE_INTERVAL = cfg.DUEL_ALIEN_MOVE_INTERVAL_MS != null ? cfg.DUEL_ALIEN_MOVE_INTERVAL_MS : 600;
   const ALIEN_LIVES = cfg.ALIEN_LIVES != null ? cfg.ALIEN_LIVES : 5;
   const ALIEN_HIT_POINTS = cfg.ALIEN_HIT_POINTS != null ? cfg.ALIEN_HIT_POINTS : 50;
+  const DUEL_ICE_BLOCK_COUNT = cfg.DUEL_ICE_BLOCK_COUNT != null ? cfg.DUEL_ICE_BLOCK_COUNT : 4;
   const TIMER_UPDATE_INTERVAL_MS = cfg.TIMER_UPDATE_INTERVAL_MS != null ? cfg.TIMER_UPDATE_INTERVAL_MS : 100;
   const TIMER_WARNING_AT_SECONDS = cfg.TIMER_WARNING_AT_SECONDS != null ? cfg.TIMER_WARNING_AT_SECONDS : 10;
   const HARD_SPEED_MULTIPLIER = cfg.HARD_SPEED_MULTIPLIER != null ? cfg.HARD_SPEED_MULTIPLIER : 1.15;
@@ -678,6 +680,7 @@
       updateUI();
       gameRunning = true;
       gamePaused = false;
+      spawnDuelIceBlocks();
       duelAlienShootTimer = setInterval(duelAlienShoot, DUEL_ALIEN_SHOOT_INTERVAL);
       duelAlienMoveTimer = setInterval(duelAlienMove, DUEL_ALIEN_MOVE_INTERVAL);
     } else {
@@ -739,6 +742,7 @@
     updateUI();
     gameRunning = true;
     gamePaused = false;
+    spawnDuelIceBlocks();
     duelAlienShootTimer = setInterval(duelAlienShoot, DUEL_ALIEN_SHOOT_INTERVAL);
     duelAlienMoveTimer = setInterval(duelAlienMove, DUEL_ALIEN_MOVE_INTERVAL);
     lastTime = performance.now();
@@ -786,6 +790,7 @@
     if (duelPlayerLasersEl) duelPlayerLasersEl.innerHTML = '';
     if (duelAlienLasersEl) duelAlienLasersEl.innerHTML = '';
     if (duelSheltersEl) duelSheltersEl.innerHTML = '';
+    if (duelIceBlocksEl) duelIceBlocksEl.innerHTML = '';
     duelPlayerYPercent = 50;
     duelAlienYPercent = 50;
     duelAlien2YPercent = 30;
@@ -834,6 +839,7 @@
     if (duelPlayerLasersEl) duelPlayerLasersEl.innerHTML = '';
     if (duelAlienLasersEl) duelAlienLasersEl.innerHTML = '';
     if (duelSheltersEl) duelSheltersEl.innerHTML = '';
+    if (duelIceBlocksEl) duelIceBlocksEl.innerHTML = '';
     duelPlayerYPercent = 50;
     duelAlienYPercent = 50;
     duelAlien2YPercent = 30;
@@ -872,6 +878,22 @@
       duelAlien2YPercent = choices2[Math.floor(Math.random() * choices2.length)];
       duelAlien2El.style.top = duelAlien2YPercent + '%';
       duelAlien2El.style.transform = 'translate(50%, -50%)';
+    }
+  }
+
+  function spawnDuelIceBlocks() {
+    if (!duelIceBlocksEl || level !== 3) return;
+    duelIceBlocksEl.innerHTML = '';
+    var count = Math.max(0, Math.min(DUEL_ICE_BLOCK_COUNT, 12));
+    for (var n = 0; n < count; n++) {
+      var block = document.createElement('div');
+      block.className = 'duel-ice-block';
+      block.setAttribute('aria-hidden', 'true');
+      var left = 28 + Math.random() * 44;
+      var top = 18 + Math.random() * 64;
+      block.style.left = left + '%';
+      block.style.top = top + '%';
+      duelIceBlocksEl.appendChild(block);
     }
   }
 
@@ -981,6 +1003,19 @@
       var node = duelPlayerLasersEl.children[i];
       var lr = node.getBoundingClientRect();
       var lrect = { left: lr.left - containerRect.left, right: lr.right - containerRect.left, top: lr.top - containerRect.top, bottom: lr.bottom - containerRect.top };
+      if (level === 3 && duelIceBlocksEl) {
+        var blockedByIce = false;
+        for (var b = 0; b < duelIceBlocksEl.children.length; b++) {
+          var br = duelIceBlocksEl.children[b].getBoundingClientRect();
+          var brect = { left: br.left - containerRect.left, right: br.right - containerRect.left, top: br.top - containerRect.top, bottom: br.bottom - containerRect.top };
+          if (rectsOverlap(lrect, brect)) {
+            node.remove();
+            blockedByIce = true;
+            break;
+          }
+        }
+        if (blockedByIce) continue;
+      }
       if (rectsOverlap(lrect, ar)) {
         var isIceHit = node.dataset.ice === '1';
         node.remove();
@@ -1032,6 +1067,17 @@
         if (rectsOverlap(lrect, jrect)) {
           node.remove();
           blockedByShelter = true;
+        }
+      }
+      if (!blockedByShelter && level === 3 && duelIceBlocksEl) {
+        for (var b = 0; b < duelIceBlocksEl.children.length; b++) {
+          var br = duelIceBlocksEl.children[b].getBoundingClientRect();
+          var brect = { left: br.left - containerRect.left, right: br.right - containerRect.left, top: br.top - containerRect.top, bottom: br.bottom - containerRect.top };
+          if (rectsOverlap(lrect, brect)) {
+            node.remove();
+            blockedByShelter = true;
+            break;
+          }
         }
       }
       if (!blockedByShelter && level === 4 && duelSheltersEl) {
